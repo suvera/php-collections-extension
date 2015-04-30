@@ -886,12 +886,10 @@ class ObjectSorter {
 public:
     zend_fcall_info* fci;
     zend_fcall_info_cache* fci_cache;
-    void*** tsrmls_dc;
 
-    ObjectSorter(zend_fcall_info* fci_, zend_fcall_info_cache* fci_cache_, void*** tsrmls_dc_) {
+    ObjectSorter(zend_fcall_info* fci_, zend_fcall_info_cache* fci_cache_) {
         fci = fci_;
         fci_cache = fci_cache_;
-        tsrmls_dc = tsrmls_dc_;
     }
 
     int operator()(zval* obj1, zval* obj2) const {
@@ -905,7 +903,7 @@ public:
         fci->params = args;
         fci->no_separation = 0;
 
-        if (zend_call_function(fci, fci_cache, tsrmls_dc) == SUCCESS) {
+        if (zend_call_function(fci, fci_cache TSRMLS_CC) == SUCCESS) {
             int ret = (int) Z_BVAL_P(retval_ptr);
             if (retval_ptr) {
                 zval_ptr_dtor(&retval_ptr);
@@ -968,7 +966,7 @@ PHP_METHOD(StdVector, sort) {
                 }
 
                 ZvalVector *vec = (ZvalVector*) thisObj->vo;
-                std::sort(vec->begin(), vec->end(), ObjectSorter(&fci, &fci_cache TSRMLS_CC));
+                std::sort(vec->begin(), vec->end(), ObjectSorter(&fci, &fci_cache));
             }
             break;
 

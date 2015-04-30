@@ -24,7 +24,7 @@ for ($i =0; $i < 1000000; $i++) {
     $arr[] = $i;
 }
 $time = microtime(true);
-$pos = array_search(500000, $arr);
+$pos = array_search(500000-1, $arr);
 echo 'search on Array<Int> Time: '. round(microtime(true) - $time, 8) . " secs ($pos)\n";
 unset($arr);
 
@@ -34,7 +34,7 @@ for ($i =0; $i < 1000000; $i++) {
     $obj->push($i);
 }
 $time = microtime(true);
-$pos = $obj->search(500000);
+$pos = $obj->search(500000-1);
 echo 'search on StdVector<Int> Time: '. round(microtime(true) - $time, 8) . " secs ($pos)\n";
 unset($obj);
 

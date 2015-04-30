@@ -1,5 +1,5 @@
 --TEST--
-Check for collections presence
+Check for collections memory
 --SKIPIF--
 <?php if (!extension_loaded("collections")) print "skip"; ?>
 --FILE--
@@ -25,12 +25,12 @@ class OPQ extends ABC {
 $obj = new StdVector(TYPE_COMPLEX_OBJECT);
 
 if ($obj->size() !== 0) {
-    echo "Failed \$obj->size() must be 0 \n";
+    echo "Failed: \$obj->size() must be 0 \n";
 }
 
 try {
     @$obj->push(100);
-    echo "Failed\n";
+    echo "Failed:\n";
 } catch (Exception $ex) {
     //echo $ex->getMessage() . "\n";
 }
@@ -55,13 +55,12 @@ unset($obj0, $obj1, $obj2, $obj3, $obj4);
 $memcgeck[6] = memory_get_usage();
 
 if ($memcgeck[1]-$memcgeck[0] !== $memSize) {
-    echo "Failed Object creation leaks memory $memcgeck[0]  !== $memcgeck[1] \n";
+    echo "Failed: Object creation leaks memory (1-0) $memcgeck[0]  !== $memcgeck[1] \n";
 }
 
-if ($memcgeck[6] !== $memcgeck[0]) {
-    echo "Failed Object unset() leaks memory $memcgeck[0]  !== $memcgeck[6] \n";
+if ($memcgeck[6] > $memcgeck[0]) {
+    echo "Failed: Object unset() leaks memory $memcgeck[0]  !== $memcgeck[6] \n";
 }
-
 
 
 $memcgeck[7] = memory_get_usage();
@@ -79,7 +78,7 @@ $memcgeck[9] = memory_get_usage();
 foreach ($arr as $indx => $num) {
     $obj->push(new ABC($num));
     if ($obj->size() !== ($indx+1)) {
-        echo "Failed \$obj->size() must be " . ($indx+1) ." \n";
+        echo "Failed: \$obj->size() must be " . ($indx+1) ." \n";
     }
 }
 
@@ -87,20 +86,20 @@ $arr = array(new ABC(10), new ABC(5), new ABC(8), new ABC(3), new ABC(1), new AB
 
 $obj = new StdVector(TYPE_COMPLEX_OBJECT);
 if ($obj->size() !== 0) {
-    echo "Failed \$obj->size() must be 0 \n";
+    echo "Failed: \$obj->size() must be 0 \n";
 }
 
 foreach ($arr as $indx => $objA) {
     $obj->push($objA);
     if ($obj->size() !== ($indx+1)) {
-        echo "Failed \$obj->size() must be " . ($indx+1) ." \n";
+        echo "Failed: \$obj->size() must be " . ($indx+1) ." \n";
     }
 }
 
 unset($obj);
 
 if ($arr[1]->num !== 5) {
-    echo "Failed value arr[1]->num  must be 5 \n";
+    echo "Failed: value arr[1]->num  must be 5 \n";
 }
 
 
@@ -111,34 +110,34 @@ while ($i < 5) {
     foreach ($arr as $indx => $objA) {
         $obj->push($objA);
         if ($obj->size() !== ($indx+1)) {
-            echo "Failed \$obj->size() must be " . ($indx+1) ." \n";
+            echo "Failed: \$obj->size() must be " . ($indx+1) ." \n";
         }
     }
 
     if ($mem === 0) {
         $mem = memory_get_usage();
     } else if (memory_get_usage() !== $mem) {
-        echo "Failed memroy leaked\n";
+        echo "Failed: memory leaked\n";
     }
     $i++;
 }
 
 if ($arr[1]->num !== 5) {
-    echo "Failed value arr[1]->num  must be 5 \n";
+    echo "Failed: value arr[1]->num  must be 5 \n";
 }
 
 $obj = new StdVector(TYPE_COMPLEX_OBJECT);
 foreach ($arr as $indx => $objA) {
     $obj->push($objA);
     if ($obj->size() !== ($indx+1)) {
-        echo "Failed \$obj->size() must be " . ($indx+1) ." \n";
+        echo "Failed: \$obj->size() must be " . ($indx+1) ." \n";
     }
 }
 
 foreach ($arr as $indx => $number) {
     $a = $obj->at($indx);
     if ($a->num !== $number->num) {
-        echo "Failed value in obj->at('$indx') must be " . $a->num . ' !== ' . $number->num ." \n";
+        echo "Failed: value in obj->at('$indx') must be " . $a->num . ' !== ' . $number->num ." \n";
     }
 }
 
@@ -152,14 +151,14 @@ $arr = array(new ABC(1), new ABC(3), new ABC(5), new ABC(8), new ABC(9), new ABC
 foreach ($arr as $indx => $number) {
     $a = $obj->at($indx);
     if ($a->num !== $number->num) {
-        echo "Failed Sorted value in obj->at('$indx') must be " . $a->num . ' !== ' . $number->num ." \n";
+        echo "Failed: Sorted value in obj->at('$indx') must be " . $a->num . ' !== ' . $number->num ." \n";
     }
 }
 
 
 try {
     @$obj->push(new XYZ());
-    echo "Failed, vector should not accept other objects.\n";
+    echo "Failed: vector should not accept other objects.\n";
 } catch (Exception $ex) {
     //echo $ex->getMessage() . "\n";
 }
