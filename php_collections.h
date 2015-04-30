@@ -1,0 +1,78 @@
+/* ---------------------------------------------------------------------------
+** see LICENSE.md
+**
+** php_collections.h
+** StdVector Implementation
+**
+** Author: rnarmala
+** -------------------------------------------------------------------------*/
+
+#ifndef PHP_COLLECTIONS_H
+#define PHP_COLLECTIONS_H
+
+
+extern zend_module_entry collections_module_entry;
+#define phpext_collections_ptr &collections_module_entry
+
+#define PHP_COLLECTIONS_VERSION "0.1.0"
+
+#ifdef PHP_WIN32
+#	define PHP_COLLECTIONS_API __declspec(dllexport)
+#elif defined(__GNUC__) && __GNUC__ >= 4
+#	define PHP_COLLECTIONS_API __attribute__ ((visibility("default")))
+#else
+#	define PHP_COLLECTIONS_API
+#endif
+
+extern "C" {
+#ifdef ZTS
+#include "TSRM.h"
+#endif
+
+#include "zend_exceptions.h"
+}
+
+#define TYPE_SCALAR_INT 1
+#define TYPE_SCALAR_FLOAT 2
+#define TYPE_SCALAR_STRING 3
+#define TYPE_SCALAR_BOOL 4
+#define TYPE_COMPLEX_RESOURCE 5
+#define TYPE_COMPLEX_OBJECT 6
+#define TYPE_COMPLEX_ARRAY 7
+
+#define DEFAULT_CAPACITY 10
+
+#define VECTOR_CLASS_NAME "StdVector"
+
+typedef unsigned long uLongInt;
+
+typedef vector<long> IntVector;
+typedef vector<double> FloatVector;
+typedef vector<bool> BoolVector;
+typedef vector<string> StringVector;
+typedef vector<zval*> ZvalVector;
+
+typedef struct _vector_object {
+    zend_object std;
+    int type;
+    void *vo;
+    long ptr;
+    zend_class_entry *objCe;
+} vector_object;
+
+PHP_MINIT_FUNCTION(collections);
+PHP_MSHUTDOWN_FUNCTION(collections);
+PHP_RINIT_FUNCTION(collections);
+PHP_RSHUTDOWN_FUNCTION(collections);
+PHP_MINFO_FUNCTION(collections);
+
+
+
+#ifdef ZTS
+#define COLLECTIONS_G(v) TSRMG(collections_globals_id, zend_collections_globals *, v)
+#else
+#define COLLECTIONS_G(v) (collections_globals.v)
+#endif
+
+#endif
+

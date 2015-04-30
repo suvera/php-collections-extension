@@ -1,2 +1,2 @@
-# php collections extension
+# PHP collections extension
 a C++ extension for PHP - Collections Framework
