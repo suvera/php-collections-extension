@@ -209,6 +209,8 @@ class StdVector {
 
 Tested with 2GB memory Limit on 64 bit machine.
 
+Tested with PHP 5.4.24
+
 Tested with 1 million items.
 
 | Test   | PHP Array (secs) | StdVector (secs) |
