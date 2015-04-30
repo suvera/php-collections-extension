@@ -4,7 +4,7 @@ a C++ extension for PHP - Collections Framework
 ## Prerequisites
   1. PHP 5.2 or higher
   2. c++0x or higher (g++ 4.4.6 or higher)
-  3. Make sre you've *phpize* and *php-config* installed.
+  3. Make sure you've *phpize* and *php-config* installed.
 
 ## Installation
   1. _cd php-collections-extension_
