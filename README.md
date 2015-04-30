@@ -7,16 +7,16 @@ a C++ extension for PHP - Collections Framework
   3. Make sre you've *phpize* and *php-config* installed.
 
 ## Installation
-  1. cd php-collections-extension
-  2. /path/to/phpize
-  3. ./configure --with-php-config=/path/to/php-config --enable-collections
-  4. make
-  5. make test # optional
-  6. sudo make install
-  7. Add *extension=collections.so* to your php.ini
+  1. _cd php-collections-extension_
+  2. _/path/to/phpize_
+  3. _./configure --with-php-config=/path/to/php-config --enable-collections_
+  4. _make_
+  5. _make test_ # optional
+  6. _sudo make install_
 
+> Add *extension=collections.so* to your php.ini
 
-Test the code by running __ /path/to/php -d"extension=collections.so" tests/performance.php__
+> Test the code by running  **/path/to/php -d"extension=collections.so" tests/performance.php**
 
 __Windows build is not supported yet.__
 
@@ -26,25 +26,25 @@ This extension comes with following predefined constants.
 
 These constants represent Collection *Value* Type.
 
-##### TYPE_SCALAR_INT
+##### 1. TYPE_SCALAR_INT
 To deal with list of Integer type values
 
-##### TYPE_SCALAR_FLOAT
+##### 2. TYPE_SCALAR_FLOAT
 To deal with list of Float type values
 
-##### TYPE_SCALAR_STRING
+##### 3. TYPE_SCALAR_STRING
 To deal with list of String type values
 
-##### TYPE_SCALAR_BOOL
+##### 4. TYPE_SCALAR_BOOL
 To deal with list of Boolean type values
 
-##### TYPE_COMPLEX_RESOURCE
+##### 5. TYPE_COMPLEX_RESOURCE
 To deal with list of Resource type values
 
-##### TYPE_COMPLEX_OBJECT
+##### 6. TYPE_COMPLEX_OBJECT
 To deal with list of Object type values
 
-##### TYPE_COMPLEX_ARRAY
+##### 7. TYPE_COMPLEX_ARRAY
 To deal with list of Array type values
 
 
@@ -55,13 +55,12 @@ This extension provides following collection classes
 1. StdVector - Vector like functionality
 
 
-### 1. StdVector
+## StdVector
 
 Simple Example:
 
 
 ```php
-
 // List of integer values
 $vector = new StdVector(TYPE_SCALAR_INT);
 $obj->push(500);
@@ -73,12 +72,10 @@ echo 'My Vector size is ' . $vector->size() . " \n";
 echo 'Item-1: ' . $vector->at(0) . "\n";
 echo 'Item-2: ' . $vector->at(1) . "\n";
 echo 'Item-3: ' . $vector->at(2) . "\n";
-
-
 ```
 
 ##### Notes
-  - StdVector does not store NULL values  (but you can store NULL for vector type TYPE_COMPLEX_OBJECT )
+> StdVector does not store NULL values  (but you can store NULL for vector of type **TYPE_COMPLEX_OBJECT** )
 
 ```php
 // List of String values
