@@ -220,3 +220,11 @@ Tested with 1 million items.
 | Creation - Object values | 2.17555594 | 1.16875815 |
 | Search Known Item - Object values | 0.11344886 | 0.05637288  |
 | Search Unknown Item - Object values | 0.11401391 | 0.05629301  |
+
+**Memory**
+Tested with 1 million integer items.
+
+| Test   | PHP Array (MB) | StdVector (MB) |
+| :----- | ---------------: | ---------------: |
+| memory_get_peak_usage | 137.92 | 0.22 |
+| zsh (time commmand) max memory | 154 | 24  |
