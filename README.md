@@ -2,9 +2,9 @@
 a C++ extension for PHP - Collections Framework
 
 ## Prerequisites
-  1. PHP 5.2 or higher
-  2. c++0x or higher (g++ 4.4.6 or higher), whichever supports unordered_map
-  3. Make sure you've *phpize* and *php-config* installed.
+  1. <sub>PHP 5.2 or higher</sub>
+  2. <sub>c++0x or higher (g++ 4.4.6 or higher), whichever supports unordered_map</sub>
+  3. <sub>Make sure you've *phpize* and *php-config* installed.</sub>
 
 ## Installation
   1. <sub>cd php-collections-extension</sub>
@@ -26,25 +26,25 @@ This extension comes with following predefined constants.
 
 These constants represent Collection *Value* Type.
 
-##### 1. TYPE_SCALAR_INT
+###### 1. TYPE_SCALAR_INT
 To deal with list of Integer type values
 
-##### 2. TYPE_SCALAR_FLOAT
+###### 2. TYPE_SCALAR_FLOAT
 To deal with list of Float type values
 
-##### 3. TYPE_SCALAR_STRING
+###### 3. TYPE_SCALAR_STRING
 To deal with list of String type values
 
-##### 4. TYPE_SCALAR_BOOL
+###### 4. TYPE_SCALAR_BOOL
 To deal with list of Boolean type values
 
-##### 5. TYPE_COMPLEX_RESOURCE
+###### 5. TYPE_COMPLEX_RESOURCE
 To deal with list of Resource type values
 
-##### 6. TYPE_COMPLEX_OBJECT
+###### 6. TYPE_COMPLEX_OBJECT
 To deal with list of Object type values
 
-##### 7. TYPE_COMPLEX_ARRAY
+###### 7. TYPE_COMPLEX_ARRAY
 To deal with list of Array type values
 
 
@@ -202,12 +202,13 @@ class StdVector {
 ```
 
 #### Performance
-
+<sub>
 Tested with 2GB memory Limit on 64 bit machine.
 
 Tested with PHP 5.4.24
 
 Tested with 1 million items.
+</sub>
 
 | Test   | PHP Array (secs) | StdVector (secs) |
 | :----- | ---------------: | ---------------: |
@@ -220,7 +221,8 @@ Tested with 1 million items.
 | Search Unknown Item - Object values | 0.11401391 | 0.05629301  |
 
 **Memory**
-Tested with 1 million integer items.
+
+<sub>Tested with 1 million integer items.</sub>
 
 | Test   | PHP Array (MB) | StdVector (MB) |
 | :----- | ---------------: | ---------------: |
