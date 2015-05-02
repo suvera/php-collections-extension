@@ -33,8 +33,6 @@ extern PHP_METHOD(StdVector, countValue);
 extern PHP_METHOD(StdVector, fill);
 // Make Unique
 extern PHP_METHOD(StdVector, unique);
-extern PHP_METHOD(StdVector, replaceIf);
-extern PHP_METHOD(StdVector, removeIf);
 
 // iterator
 extern PHP_METHOD(StdVector, hasNext);
@@ -76,8 +74,6 @@ static zend_function_entry vector_class_methods[] = {
     PHP_ME(StdVector, countValue, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdVector, fill, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdVector, unique, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdVector, replaceIf, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdVector, removeIf, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdVector, hasNext, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdVector, hasPrev, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdVector, moveFirst, NULL, ZEND_ACC_PUBLIC)

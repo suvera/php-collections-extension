@@ -350,7 +350,7 @@ PHP_METHOD(StdVector, push) {
 
             ((ZvalVector*) thisObj->vo)->push_back(val);
 
-            Z_ADDREF_P(val);
+            add_reference_count(val);
         }
         break;
 
@@ -378,7 +378,7 @@ PHP_METHOD(StdVector, push) {
 
                 vec->push_back(val);
 
-                Z_ADDREF_P(val);
+                add_reference_count(val);
             } else {
                 vec->push_back(NULL);
             }
@@ -396,7 +396,7 @@ PHP_METHOD(StdVector, push) {
 
             ((ZvalVector*) thisObj->vo)->push_back(val);
 
-            Z_ADDREF_P(val);
+            add_reference_count(val);
         }
         break;
 
@@ -498,7 +498,7 @@ PHP_METHOD(StdVector, replace) {
                 ZvalVector *vec = (ZvalVector*) thisObj->vo;
                 (*vec)[position] = val;
 
-                Z_ADDREF_P(val);
+                add_reference_count(val);
             }
             break;
 
@@ -527,7 +527,7 @@ PHP_METHOD(StdVector, replace) {
 
                     (*vec)[position] = val;
 
-                    Z_ADDREF_P(val);
+                    add_reference_count(val);
                 } else {
                     (*vec)[position] = NULL;
                 }
@@ -547,7 +547,7 @@ PHP_METHOD(StdVector, replace) {
                 ZvalVector *vec = (ZvalVector*) thisObj->vo;
                 (*vec)[position] = val;
 
-                Z_ADDREF_P(val);
+                add_reference_count(val);
             }
             break;
 
@@ -648,7 +648,7 @@ PHP_METHOD(StdVector, insert) {
                 ZvalVector *vec = (ZvalVector*) thisObj->vo;
                 vec->insert(vec->begin()+position, val);
 
-                Z_ADDREF_P(val);
+                add_reference_count(val);
             }
             break;
 
@@ -677,7 +677,7 @@ PHP_METHOD(StdVector, insert) {
 
                     vec->insert(vec->begin()+position, val);
 
-                    Z_ADDREF_P(val);
+                    add_reference_count(val);
                 } else {
                     vec->insert(vec->begin()+position, NULL);
                 }
@@ -689,7 +689,7 @@ PHP_METHOD(StdVector, insert) {
             case TYPE_COMPLEX_ARRAY:
             {
                 zval *val;
-                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &val) == FAILURE) {
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "la", &val, &position) == FAILURE) {
                     zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
                     return;
                 }
@@ -697,7 +697,7 @@ PHP_METHOD(StdVector, insert) {
                 ZvalVector *vec = (ZvalVector*) thisObj->vo;
                 vec->insert(vec->begin()+position, val);
 
-                Z_ADDREF_P(val);
+                add_reference_count(val);
             }
             break;
 
@@ -1075,7 +1075,7 @@ PHP_METHOD(StdVector, search) {
 
             ZvalVector *vec = (ZvalVector*) thisObj->vo;
             for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
-                if (Z_LVAL_P(*it) == Z_LVAL_P(val)) {
+                if (compareZvalResource(*it, val)) {
                     pos = it - vec->begin();
                     break;
                 }
@@ -1093,19 +1093,10 @@ PHP_METHOD(StdVector, search) {
             }
 
             ZvalVector *vec = (ZvalVector*) thisObj->vo;
-            if (val != NULL) {
-                for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
-                    if (Z_OBJ_HT_P(*it) == Z_OBJ_HT_P(val) && (Z_OBJ_HANDLE_P(*it) == Z_OBJ_HANDLE_P(val))) {
-                        pos = it - vec->begin();
-                        break;
-                    }
-                }
-            } else {
-                for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
-                    if (*it == NULL) {
-                        pos = it - vec->begin();
-                        break;
-                    }
+            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                if (compareZvalObject(*it, val)) {
+                    pos = it - vec->begin();
+                    break;
                 }
             }
         }
@@ -1122,9 +1113,7 @@ PHP_METHOD(StdVector, search) {
 
             ZvalVector *vec = (ZvalVector*) thisObj->vo;
             for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
-                if ((Z_ARRVAL_P(*it) == Z_ARRVAL_P(val)) ||
-                    zend_hash_compare(Z_ARRVAL_P(*it), Z_ARRVAL_P(val), (compare_func_t) hash_zval_identical_function, 1 TSRMLS_CC)==0) {
-
+                if (compareZvalArray(*it, val)) {
                     pos = it - vec->begin();
                     break;
                 }
@@ -1353,29 +1342,607 @@ PHP_METHOD(StdVector, reverse) {
 }
 
 
+class ApplyEachCaller {
+public:
+    zend_fcall_info* fci;
+    zend_fcall_info_cache* fci_cache;
 
-// TODO: implement this method
-PHP_METHOD(StdVector, applyEach) {}
+    ApplyEachCaller(zend_fcall_info* fci_, zend_fcall_info_cache* fci_cache_) {
+        fci = fci_;
+        fci_cache = fci_cache_;
+    }
+
+    int __call(zval* obj1) const {
+        zval **args[1], *retval_ptr = NULL;
+
+        args[0] = &obj1;
+
+        fci->retval_ptr_ptr = &retval_ptr;
+        fci->param_count = 1;
+        fci->params = args;
+        fci->no_separation = 0;
+
+        if (zend_call_function(fci, fci_cache TSRMLS_CC) == SUCCESS) {
+            // What should we do here?
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int operator()(zval* obj1) const {
+        return this->__call(obj1);
+    }
+    int operator()(long& val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_LONG(obj1, val);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+    int operator()(double& val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_DOUBLE(obj1, val);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(bool val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_BOOL(obj1, val);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(string& val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_STRING(obj1, val.c_str(), 1);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+};
+
+// Apply function to all elements in this vector
+PHP_METHOD(StdVector, applyEach) {
+    zend_fcall_info fci;
+    zend_fcall_info_cache fci_cache;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "f", &fci, &fci_cache) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+    zval *object = getThis();
+    vector_object *thisObj = (vector_object *) zend_object_store_get_object(object TSRMLS_CC);
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntVector *vec = (IntVector*) thisObj->vo;
+            std::for_each (vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatVector *vec = (FloatVector*) thisObj->vo;
+            std::for_each (vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringVector *vec = (StringVector*) thisObj->vo;
+            std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolVector *vec = (BoolVector*) thisObj->vo;
+            ApplyEachCaller clr(&fci, &fci_cache);
+            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                clr(*it);
+            }
+            //std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+
+    RETURN_TRUE;
+}
 
 
-// TODO: implement this method
-PHP_METHOD(StdVector, countValue) {}
 
 
-// TODO: implement this method
-PHP_METHOD(StdVector, fill) {}
+
+//Count appearances of value in this vector
+PHP_METHOD(StdVector, countValue) {
+    zval *object = getThis();
+    vector_object *thisObj = (vector_object *) zend_object_store_get_object(object TSRMLS_CC);
+    long pos = 0;
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            long val = 0;
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &val) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            IntVector *vec = (IntVector*) thisObj->vo;
+            pos = std::count(vec->begin(), vec->end(), val);
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            double val = 0;
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "d", &val) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            FloatVector *vec = (FloatVector*) thisObj->vo;
+            pos = std::count(vec->begin(), vec->end(), val);
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            char *val;
+            long val_len = 0;
+
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &val, &val_len) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            StringVector *vec = (StringVector*) thisObj->vo;
+            pos = std::count(vec->begin(), vec->end(), val);
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            zend_bool val = 0;
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "b", &val) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            BoolVector *vec = (BoolVector*) thisObj->vo;
+            pos = std::count(vec->begin(), vec->end(), val);
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        {
+            zval *val;
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "r", &val) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                if (compareZvalResource(*it, val)) {
+                    pos++;
+                }
+            }
+        }
+        break;
 
 
-// TODO: implement this method
-PHP_METHOD(StdVector, unique) {}
+        case TYPE_COMPLEX_OBJECT:
+        {
+            zval *val = NULL;
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o!", &val) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                if (compareZvalObject(*it, val)) {
+                    pos++;
+                }
+            }
+        }
+        break;
 
 
-// TODO: implement this method
-PHP_METHOD(StdVector, replaceIf) {}
+        case TYPE_COMPLEX_ARRAY:
+        {
+            zval *val;
+            if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &val) == FAILURE) {
+                zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                return;
+            }
+
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                if (compareZvalArray(*it, val)) {
+                    pos++;
+                }
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+
+    RETURN_LONG(pos);
+}
 
 
-// TODO: implement this method
-PHP_METHOD(StdVector, removeIf) {}
+
+
+// fill with value
+PHP_METHOD(StdVector, fill) {
+    zval *object = getThis();
+    vector_object *thisObj = (vector_object *) zend_object_store_get_object(object TSRMLS_CC);
+    long position = 0, length = 0;
+    uLongInt size = 0;
+
+    try {
+        switch (thisObj->type) {
+            case TYPE_SCALAR_INT:
+            {
+                long val = 0;
+                IntVector *vec = (IntVector*) thisObj->vo;
+                size = vec->size();
+
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|lll", &val, &position, &length) == FAILURE) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+            }
+            break;
+
+            case TYPE_SCALAR_FLOAT:
+            {
+                double val = 0.00;
+                FloatVector *vec = (FloatVector*) thisObj->vo;
+                size = vec->size();
+
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|dll",&val, &position, &length) == FAILURE) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+            }
+            break;
+
+            case TYPE_SCALAR_STRING:
+            {
+                char *val = NULL;
+                long val_len = 0;
+                StringVector *vec = (StringVector*) thisObj->vo;
+                size = vec->size();
+
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|sll",&val, &position, &length, &val_len) == FAILURE) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+            }
+            break;
+
+            case TYPE_SCALAR_BOOL:
+            {
+                zend_bool val = 0;
+                StringVector *vec = (StringVector*) thisObj->vo;
+                size = vec->size();
+
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|bll",&val, &position, &length) == FAILURE) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+            }
+            break;
+
+            case TYPE_COMPLEX_RESOURCE:
+            {
+                zval *val = NULL;
+                ZvalVector *vec = (ZvalVector*) thisObj->vo;
+                size = vec->size();
+
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|rll",&val, &position, &length) == FAILURE) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+
+                for (auto it = vec->begin()+position; it != vec->begin()+length; ++it) {
+                    add_reference_count(*it);
+                }
+            }
+            break;
+
+
+            case TYPE_COMPLEX_OBJECT:
+            {
+                zval *val = NULL;
+                ZvalVector *vec = (ZvalVector*) thisObj->vo;
+                size = vec->size();
+
+                if (thisObj->objCe == NULL) {
+                    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|oll",&val, &position, &length) == FAILURE) {
+                        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                        return;
+                    }
+                } else {
+                    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|Oll",&val, &position, &length, thisObj->objCe) == FAILURE) {
+                        zend_throw_exception(NULL, "Invalid input parameters to the method, Could not add other objects into this vector.", 0 TSRMLS_CC);
+                        return;
+                    }
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+
+                if (val != NULL) {
+                    for (auto it = vec->begin()+position; it != vec->begin()+length; ++it) {
+                        add_reference_count(*it);
+                    }
+                }
+            }
+            break;
+
+
+            case TYPE_COMPLEX_ARRAY:
+            {
+                zval *val = NULL;
+                ZvalVector *vec = (ZvalVector*) thisObj->vo;
+                size = vec->size();
+
+                if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|all", &val, &position, &length) == FAILURE) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position < 0 || length < 0) {
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Start position or length cannot be negative.", 0 TSRMLS_CC);
+                    return;
+                }
+
+                if (position + length > size) {
+                    size = position + length;
+                    vec->resize(size);
+                }
+
+                if (length == 0) {
+                    length = size;
+                }
+
+                std::fill(vec->begin()+position, vec->begin()+length, val);
+
+                for (auto it = vec->begin()+position; it != vec->begin()+length; ++it) {
+                    add_reference_count(*it);
+                }
+            }
+            break;
+
+            default:
+            {
+                throw string("Invalid data type");
+            }
+            break;
+        }
+    } catch (const std::string& ex) {
+        zend_throw_exception(NULL, (char*) ex.c_str(), 0 TSRMLS_CC);
+        return;
+    } catch (const std::exception& ex) {
+        zend_throw_exception(NULL, (char*) ex.what(), 0 TSRMLS_CC);
+        return;
+    } catch (...) {
+        zend_throw_exception(NULL, "Unknown error in StdVector::fill", 0 TSRMLS_CC);
+        return;
+    }
+
+    RETURN_TRUE;
+}
+
+
+
+
+// Make it unique
+PHP_METHOD(StdVector, unique) {
+    zval *object = getThis();
+    vector_object *thisObj = (vector_object *) zend_object_store_get_object(object TSRMLS_CC);
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntVector *vec = (IntVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatVector *vec = (FloatVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringVector *vec = (StringVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolVector *vec = (BoolVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        {
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end(), compareZvalResource);
+        }
+        break;
+
+        case TYPE_COMPLEX_OBJECT:
+        {
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end(), compareZvalObject);
+        }
+        break;
+
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            std::unique(vec->begin(), vec->end(), compareZvalArray);
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+
+    RETURN_TRUE;
+}
+
 
 
 
@@ -1780,9 +2347,7 @@ PHP_METHOD(StdVector, append) {
             vec->insert(vec->end(), otherVec->begin(), otherVec->end());
 
             for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
-                if (*it != NULL) {
-                    Z_ADDREF_P(*it);
-                }
+                add_reference_count(*it);
             }
         }
         break;
@@ -1797,6 +2362,22 @@ PHP_METHOD(StdVector, append) {
 
     RETURN_TRUE;
 }
+
+
+
+
+template<class T>
+T* mergeVectors(const T* vec, const T* otherVec) {
+    T *merged = new T();
+
+    merged->reserve(vec->size() + otherVec->size());
+
+    std::copy(vec->begin(), vec->end(), merged->begin());
+    merged->insert(merged->end(), otherVec->begin(), otherVec->end());
+
+    return merged;
+}
+
 
 PHP_METHOD(StdVector, merge) {
     zval *other;
@@ -1827,10 +2408,7 @@ PHP_METHOD(StdVector, merge) {
             IntVector *vec = (IntVector*) thisObj->vo;
             IntVector *otherVec = (IntVector*) otherObj->vo;
 
-            IntVector *merged = new IntVector();
-            merged->reserve(vec->size() + otherVec->size());
-            std::merge(vec->begin(), vec->end(), otherVec->begin(), otherVec->end(), merged->begin());
-            resultObject->vo = merged;
+            resultObject->vo = mergeVectors<IntVector>(vec, otherVec);
         }
         break;
 
@@ -1839,10 +2417,7 @@ PHP_METHOD(StdVector, merge) {
             FloatVector *vec = (FloatVector*) thisObj->vo;
             FloatVector *otherVec = (FloatVector*) otherObj->vo;
 
-            FloatVector *merged = new FloatVector();
-            merged->reserve(vec->size() + otherVec->size());
-            std::merge(vec->begin(), vec->end(), otherVec->begin(), otherVec->end(), merged->begin());
-            resultObject->vo = merged;
+            resultObject->vo = mergeVectors<FloatVector>(vec, otherVec);
         }
         break;
 
@@ -1851,10 +2426,7 @@ PHP_METHOD(StdVector, merge) {
             StringVector *vec = (StringVector*) thisObj->vo;
             StringVector *otherVec = (StringVector*) otherObj->vo;
 
-            StringVector *merged = new StringVector();
-            merged->reserve(vec->size() + otherVec->size());
-            std::merge(vec->begin(), vec->end(), otherVec->begin(), otherVec->end(), merged->begin());
-            resultObject->vo = merged;
+            resultObject->vo = mergeVectors<StringVector>(vec, otherVec);
         }
         break;
 
@@ -1863,10 +2435,7 @@ PHP_METHOD(StdVector, merge) {
             BoolVector *vec = (BoolVector*) thisObj->vo;
             BoolVector *otherVec = (BoolVector*) otherObj->vo;
 
-            BoolVector *merged = new BoolVector();
-            merged->reserve(vec->size() + otherVec->size());
-            std::merge(vec->begin(), vec->end(), otherVec->begin(), otherVec->end(), merged->begin());
-            resultObject->vo = merged;
+            resultObject->vo = mergeVectors<BoolVector>(vec, otherVec);
         }
         break;
 
@@ -1877,15 +2446,11 @@ PHP_METHOD(StdVector, merge) {
             ZvalVector *vec = (ZvalVector*) thisObj->vo;
             ZvalVector *otherVec = (ZvalVector*) otherObj->vo;
 
-            ZvalVector *merged = new ZvalVector();
-            merged->reserve(vec->size() + otherVec->size());
-            std::merge(vec->begin(), vec->end(), otherVec->begin(), otherVec->end(), merged->begin());
+            ZvalVector *merged = (ZvalVector*) mergeVectors<ZvalVector>(vec, otherVec);
             resultObject->vo = merged;
 
             for (auto it = merged->begin(); it != merged->end(); ++it) {
-                if (*it != NULL) {
-                    Z_ADDREF_P(*it);
-                }
+                add_reference_count(*it);
             }
         }
         break;
@@ -1899,6 +2464,326 @@ PHP_METHOD(StdVector, merge) {
     }
 }
 
-PHP_METHOD(StdVector, intersect) {}
 
-PHP_METHOD(StdVector, diff) {}
+
+
+template<class T, class X>
+T* intersectVectors(const T* vec, const T* otherVec) {
+    T *intersect = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0 || otherVecSize == 0) {
+        return intersect;
+    }
+
+    unordered_map<X, int> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        intersect->reserve(vecSize);
+    } else {
+        intersect->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[*it] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (mp.count(*it)) {
+            intersect->push_back(*it);
+        }
+    }
+
+    return intersect;
+}
+
+template<class T>
+T* intersectZvalVectors(const T* vec, const T* otherVec, int type) {
+    T *intersect = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0 || otherVecSize == 0) {
+        return intersect;
+    }
+
+    CompareZvalValue::type = type;
+    unordered_map<zval*, int, std::hash<zval*>, CompareZvalValue> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        intersect->reserve(vecSize);
+    } else {
+        intersect->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[*it] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (mp.count(*it)) {
+            intersect->push_back(*it);
+        }
+    }
+
+    return intersect;
+}
+
+PHP_METHOD(StdVector, intersect) {
+    zval *other;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, &vector_entry) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+    zval *object = getThis();
+
+    vector_object *thisObj = (vector_object *) zend_object_store_get_object(object TSRMLS_CC);
+    vector_object *otherObj = (vector_object *) zend_object_store_get_object(other TSRMLS_CC);
+
+    if (thisObj->type != otherObj->type) {
+        zend_throw_exception(NULL, "Could not intersect elements in to another type of vector.", 0 TSRMLS_CC);
+        return;
+    }
+
+    object_init_ex(return_value, vector_entry);
+    vector_object* resultObject = (vector_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    resultObject->type = thisObj->type;
+    resultObject->objCe = thisObj->objCe;
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntVector *vec = (IntVector*) thisObj->vo;
+            IntVector *otherVec = (IntVector*) otherObj->vo;
+
+            resultObject->vo = intersectVectors<IntVector, long>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatVector *vec = (FloatVector*) thisObj->vo;
+            FloatVector *otherVec = (FloatVector*) otherObj->vo;
+
+            resultObject->vo = intersectVectors<FloatVector, double>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringVector *vec = (StringVector*) thisObj->vo;
+            StringVector *otherVec = (StringVector*) otherObj->vo;
+
+            resultObject->vo = intersectVectors<StringVector, string>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolVector *vec = (BoolVector*) thisObj->vo;
+            BoolVector *otherVec = (BoolVector*) otherObj->vo;
+
+            resultObject->vo = intersectVectors<BoolVector, bool>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            ZvalVector *otherVec = (ZvalVector*) otherObj->vo;
+
+            ZvalVector *intersect = (ZvalVector*) intersectZvalVectors<ZvalVector>(vec, otherVec, thisObj->type);
+            resultObject->vo = intersect;
+
+            for (auto it = intersect->begin(); it != intersect->end(); ++it) {
+                add_reference_count(*it);
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+}
+
+
+
+
+
+
+template<class T, class X>
+T* diffVectors(const T* vec, const T* otherVec) {
+    T *diff = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0) {
+        return diff;
+    } else if (otherVecSize == 0) {
+        diff->reserve(vecSize);
+        std::copy(vec->begin(), vec->end(), diff->begin());
+        return diff;
+    }
+
+    unordered_map<X, int> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        diff->reserve(vecSize);
+    } else {
+        diff->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[*it] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (!mp.count(*it)) {
+            diff->push_back(*it);
+        }
+    }
+
+    return diff;
+}
+
+template<class T>
+T* diffZvalVectors(const T* vec, const T* otherVec, int type) {
+    T *diff = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0) {
+        return diff;
+    } else if (otherVecSize == 0) {
+        diff->reserve(vecSize);
+        std::copy(vec->begin(), vec->end(), diff->begin());
+        return diff;
+    }
+
+    CompareZvalValue::type = type;
+    unordered_map<zval*, int, std::hash<zval*>, CompareZvalValue> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        diff->reserve(vecSize);
+    } else {
+        diff->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[*it] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (!mp.count(*it)) {
+            diff->push_back(*it);
+        }
+    }
+
+    return diff;
+}
+
+PHP_METHOD(StdVector, diff) {
+    zval *other;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, &vector_entry) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+    zval *object = getThis();
+
+    vector_object *thisObj = (vector_object *) zend_object_store_get_object(object TSRMLS_CC);
+    vector_object *otherObj = (vector_object *) zend_object_store_get_object(other TSRMLS_CC);
+
+    if (thisObj->type != otherObj->type) {
+        zend_throw_exception(NULL, "Could not diff elements in to another type of vector.", 0 TSRMLS_CC);
+        return;
+    }
+
+    object_init_ex(return_value, vector_entry);
+    vector_object* resultObject = (vector_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    resultObject->type = thisObj->type;
+    resultObject->objCe = thisObj->objCe;
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntVector *vec = (IntVector*) thisObj->vo;
+            IntVector *otherVec = (IntVector*) otherObj->vo;
+
+            resultObject->vo = diffVectors<IntVector, long>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatVector *vec = (FloatVector*) thisObj->vo;
+            FloatVector *otherVec = (FloatVector*) otherObj->vo;
+
+            resultObject->vo = diffVectors<FloatVector, double>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringVector *vec = (StringVector*) thisObj->vo;
+            StringVector *otherVec = (StringVector*) otherObj->vo;
+
+            resultObject->vo = diffVectors<StringVector, string>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolVector *vec = (BoolVector*) thisObj->vo;
+            BoolVector *otherVec = (BoolVector*) otherObj->vo;
+
+            resultObject->vo = diffVectors<BoolVector, bool>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalVector *vec = (ZvalVector*) thisObj->vo;
+            ZvalVector *otherVec = (ZvalVector*) otherObj->vo;
+
+            ZvalVector *diff = (ZvalVector*) diffZvalVectors<ZvalVector>(vec, otherVec, thisObj->type);
+            resultObject->vo = diff;
+
+            for (auto it = diff->begin(); it != diff->end(); ++it) {
+                add_reference_count(*it);
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+}

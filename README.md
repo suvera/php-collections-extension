@@ -2,17 +2,17 @@
 a C++ extension for PHP - Collections Framework
 
 ## Prerequisites
-  1. PHP 5.2 or higher
-  2. c++0x or higher (g++ 4.4.6 or higher)
-  3. Make sure you've *phpize* and *php-config* installed.
+  1. <sub>PHP 5.2 or higher</sub>
+  2. <sub>c++0x or higher (g++ 4.4.6 or higher), whichever supports unordered_map</sub>
+  3. <sub>Make sure you've *phpize* and *php-config* installed.</sub>
 
 ## Installation
-  1. _cd php-collections-extension_
-  2. _/path/to/phpize_
-  3. _./configure --with-php-config=/path/to/php-config --enable-collections_
-  4. _make_
-  5. _make test_ # optional
-  6. _sudo make install_
+  1. <sub>cd php-collections-extension</sub>
+  2. <sub>/path/to/phpize</sub>
+  3. <sub>./configure --with-php-config=/path/to/php-config --enable-collections</sub>
+  4. <sub>make</sub>
+  5. <sub>make test # optional</sub>
+  6. <sub>sudo make install</sub>
 
 > Add *extension=collections.so* to your php.ini
 
@@ -26,27 +26,47 @@ This extension comes with following predefined constants.
 
 These constants represent Collection *Value* Type.
 
-##### 1. TYPE_SCALAR_INT
+- 1. TYPE_SCALAR_INT
+
+<sub>
 To deal with list of Integer type values
+</sub>
 
-##### 2. TYPE_SCALAR_FLOAT
+- 2. TYPE_SCALAR_FLOAT
+
+<sub>
 To deal with list of Float type values
+</sub>
 
-##### 3. TYPE_SCALAR_STRING
+- 3. TYPE_SCALAR_STRING
+
+<sub>
 To deal with list of String type values
+</sub>
 
-##### 4. TYPE_SCALAR_BOOL
+- 4. TYPE_SCALAR_BOOL
+
+<sub>
 To deal with list of Boolean type values
+</sub>
 
-##### 5. TYPE_COMPLEX_RESOURCE
+- 5. TYPE_COMPLEX_RESOURCE
+
+<sub>
 To deal with list of Resource type values
+</sub>
 
-##### 6. TYPE_COMPLEX_OBJECT
+- 6. TYPE_COMPLEX_OBJECT
+
+<sub>
 To deal with list of Object type values
+</sub>
 
-##### 7. TYPE_COMPLEX_ARRAY
+- 7. TYPE_COMPLEX_ARRAY
+
+<sub>
 To deal with list of Array type values
-
+</sub>
 
 ## PHP Classes
 
@@ -169,10 +189,6 @@ class StdVector {
 
     public function unique() {}
 
-    public function replaceIf() {}
-
-    public function removeIf() {}
-
     /**
      * @return bool
      */
@@ -207,11 +223,12 @@ class StdVector {
 
 #### Performance
 
-Tested with 2GB memory Limit on 64 bit machine.
+<sub>Tested with 2GB memory Limit on 64 bit machine.</sub>
 
-Tested with PHP 5.4.24
+<sub>Tested with PHP 5.4.24</sub>
 
-Tested with 1 million items.
+<sub>Tested with 1 million items.</sub>
+
 
 | Test   | PHP Array (secs) | StdVector (secs) |
 | :----- | ---------------: | ---------------: |
@@ -224,7 +241,8 @@ Tested with 1 million items.
 | Search Unknown Item - Object values | 0.11401391 | 0.05629301  |
 
 **Memory**
-Tested with 1 million integer items.
+
+<sub>Tested with 1 million integer items.</sub>
 
 | Test   | PHP Array (MB) | StdVector (MB) |
 | :----- | ---------------: | ---------------: |
