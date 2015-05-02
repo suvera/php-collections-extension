@@ -27,36 +27,43 @@ This extension comes with following predefined constants.
 These constants represent Collection *Value* Type.
 
 1. TYPE_SCALAR_INT
+
 <sub>
 To deal with list of Integer type values
 </sub>
 
 2. TYPE_SCALAR_FLOAT
+
 <sub>
 To deal with list of Float type values
 </sub>
 
 3. TYPE_SCALAR_STRING
+
 <sub>
 To deal with list of String type values
 </sub>
 
 4. TYPE_SCALAR_BOOL
+
 <sub>
 To deal with list of Boolean type values
 </sub>
 
 5. TYPE_COMPLEX_RESOURCE
+
 <sub>
 To deal with list of Resource type values
 </sub>
 
 6. TYPE_COMPLEX_OBJECT
+
 <sub>
 To deal with list of Object type values
 </sub>
 
 7. TYPE_COMPLEX_ARRAY
+
 <sub>
 To deal with list of Array type values
 </sub>
@@ -215,13 +222,13 @@ class StdVector {
 ```
 
 #### Performance
-<sub>
-Tested with 2GB memory Limit on 64 bit machine.
 
-Tested with PHP 5.4.24
+<sub>Tested with 2GB memory Limit on 64 bit machine.</sub>
 
-Tested with 1 million items.
-</sub>
+<sub>Tested with PHP 5.4.24</sub>
+
+<sub>Tested with 1 million items.</sub>
+
 
 | Test   | PHP Array (secs) | StdVector (secs) |
 | :----- | ---------------: | ---------------: |
