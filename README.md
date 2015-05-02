@@ -7,12 +7,12 @@ a C++ extension for PHP - Collections Framework
   3. Make sure you've *phpize* and *php-config* installed.
 
 ## Installation
-  1. _cd php-collections-extension_
-  2. _/path/to/phpize_
-  3. _./configure --with-php-config=/path/to/php-config --enable-collections_
-  4. _make_
-  5. _make test_ # optional
-  6. _sudo make install_
+  1. <sub>cd php-collections-extension</sub>
+  2. <sub>/path/to/phpize</sub>
+  3. <sub>./configure --with-php-config=/path/to/php-config --enable-collections</sub>
+  4. <sub>make</sub>
+  5. <sub>make test</sub> # optional
+  6. <sub>sudo make install</sub>
 
 > Add *extension=collections.so* to your php.ini
 
