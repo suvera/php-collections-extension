@@ -9,17 +9,22 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #include <iostream>
+#include <stdlib.h>
 #include <string>
 #include <sstream>
 #include <memory>
+#include <math.h>
 #include <algorithm>
 #include <vector>
-#include <math.h>
+#include <unordered_map>
+#include <functional>
+
 
 using std::cout;
 using std::endl;
 using std::vector;
 using std::string;
+using std::unordered_map;
 
 
 
@@ -109,6 +114,78 @@ static void delete_reference_count(zval* val)
         zval_dtor(val);
     }
 }
+static void add_reference_count(zval* val)
+{
+    if (val == NULL) {
+        return;
+    }
+
+    Z_ADDREF_P(val);
+}
+
+struct zvalCompareObject {
+};
+
+static bool compareZvalObject(const zval *val1, const zval* val2) {
+    if (val1 == NULL && val2 == NULL) {
+        return 1;
+    } else if (val1 == NULL || val2 == NULL) {
+        return 0;
+    } else if (Z_OBJ_HT_P(val1) == Z_OBJ_HT_P(val2) && Z_OBJ_HANDLE_P(val1) == Z_OBJ_HANDLE_P(val2)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static bool compareZvalArray(const zval *val1, const zval* val2) {
+    if (val1 == NULL && val2 == NULL) {
+        return 1;
+    } else if (val1 == NULL || val2 == NULL) {
+        return 0;
+    } else if (Z_ARRVAL_P(val1) == Z_ARRVAL_P(val2) ||
+             zend_hash_compare(Z_ARRVAL_P(val1), Z_ARRVAL_P(val2), (compare_func_t) hash_zval_identical_function, 1 TSRMLS_CC) == 0 ) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static bool compareZvalResource(const zval *val1, const zval* val2) {
+    if (val1 == NULL && val2 == NULL) {
+        return 1;
+    } else if (val1 == NULL || val2 == NULL) {
+        return 0;
+    } else if (Z_LVAL_P(val1) == Z_LVAL_P(val2)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+struct CompareZvalValue {
+    static int type;
+
+    int operator()(const zval* obj1, const zval* obj2) const {
+        switch (CompareZvalValue::type) {
+            case TYPE_COMPLEX_RESOURCE:
+                return compareZvalResource(obj1, obj2);
+            break;
+
+            case TYPE_COMPLEX_OBJECT:
+                return compareZvalObject(obj1, obj2);
+            break;
+
+            case TYPE_COMPLEX_ARRAY:
+                return compareZvalArray(obj1, obj2);
+            break;
+        }
+
+        return 0;
+    }
+};
+
+int CompareZvalValue::type = 0;
 
 
 #include "std_vector.h"

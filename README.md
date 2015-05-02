@@ -3,7 +3,7 @@ a C++ extension for PHP - Collections Framework
 
 ## Prerequisites
   1. PHP 5.2 or higher
-  2. c++0x or higher (g++ 4.4.6 or higher)
+  2. c++0x or higher (g++ 4.4.6 or higher), whichever supports unordered_map
   3. Make sure you've *phpize* and *php-config* installed.
 
 ## Installation
@@ -168,10 +168,6 @@ class StdVector {
     public function fill() {}
 
     public function unique() {}
-
-    public function replaceIf() {}
-
-    public function removeIf() {}
 
     /**
      * @return bool

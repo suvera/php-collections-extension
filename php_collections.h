@@ -68,6 +68,7 @@ PHP_MINFO_FUNCTION(collections);
 
 
 
+
 #ifdef ZTS
 #define COLLECTIONS_G(v) TSRMG(collections_globals_id, zend_collections_globals *, v)
 #else
