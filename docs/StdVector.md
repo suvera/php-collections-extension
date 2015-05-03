@@ -32,7 +32,7 @@ $obj->push('bing');
 $size = $vector->size();
 
 for ($i = 0; $i < $size; $i++) {
-    echo "Item $i: " . $vector->at(0) . "\n";
+    echo "Item $i = " . $vector->at($i) . "\n";
 }
 ```
 
