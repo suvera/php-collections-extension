@@ -33,7 +33,7 @@ $obj->push('git', 'github');
 $obj->push('goog', 'google');
 $obj->push('b', 'bing');
 
-echo 'My Vector size is ' . $map->size() . " \n";
+echo 'My Map size is ' . $map->size() . " \n";
 
 echo 'Item-1: ' . $map->at('git') . "\n";
 echo 'Item-2: ' . $map->at('goog') . "\n";
