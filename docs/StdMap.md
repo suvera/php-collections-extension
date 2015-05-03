@@ -3,7 +3,8 @@
 StdMap is a associative container that store elements formed by the combination of a key value and a mapped value.
 
 Key - must be a string, cannot be NULL
-Value - can be anything
+
+Value - can be anything (can be NULL for object type)
 
 
 Simple Example:
