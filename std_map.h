@@ -13,6 +13,16 @@ extern PHP_METHOD(StdMap, getClass);
 extern PHP_METHOD(StdMap, keys);
 extern PHP_METHOD(StdMap, values);
 
+// iterator
+extern PHP_METHOD(StdMap, hasNext);
+extern PHP_METHOD(StdMap, hasPrev);
+extern PHP_METHOD(StdMap, moveFirst);
+extern PHP_METHOD(StdMap, moveLast);
+extern PHP_METHOD(StdMap, getPointer);
+extern PHP_METHOD(StdMap, getKey);
+extern PHP_METHOD(StdMap, getValue);
+extern PHP_METHOD(StdMap, seek);
+
 static zend_function_entry map_class_methods[] = {
     PHP_ME(StdMap, size, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdMap, reserve, arginfo_vector_reserve, ZEND_ACC_PUBLIC)
@@ -30,6 +40,16 @@ static zend_function_entry map_class_methods[] = {
 
 	/* Aliases */
     PHP_MALIAS(StdMap, replace, push, arginfo_vector_add, ZEND_ACC_PUBLIC)
+
+    PHP_ME(StdMap, hasNext, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, hasPrev, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, moveFirst, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, moveLast, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, getPointer, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, getKey, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, getValue, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, seek, NULL, ZEND_ACC_PUBLIC)
+
 	PHP_FE_END
 };
 
