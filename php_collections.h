@@ -43,6 +43,7 @@ extern "C" {
 #define DEFAULT_CAPACITY 10
 
 #define VECTOR_CLASS_NAME "StdVector"
+#define MAP_CLASS_NAME "StdMap"
 
 typedef unsigned long uLongInt;
 
@@ -52,6 +53,12 @@ typedef vector<bool> BoolVector;
 typedef vector<string> StringVector;
 typedef vector<zval*> ZvalVector;
 
+typedef unordered_map<string, long> IntStdMap;
+typedef unordered_map<string, double> FloatStdMap;
+typedef unordered_map<string, string> StringStdMap;
+typedef unordered_map<string, bool> BoolStdMap;
+typedef unordered_map<string, zval*> ZvalStdMap;
+
 typedef struct _vector_object {
     zend_object std;
     int type;
@@ -59,6 +66,14 @@ typedef struct _vector_object {
     long ptr;
     zend_class_entry *objCe;
 } vector_object;
+
+typedef struct _map_object {
+    zend_object std;
+    int type;
+    void *vo;
+    long ptr;
+    zend_class_entry *objCe;
+} map_object;
 
 PHP_MINIT_FUNCTION(collections);
 PHP_MSHUTDOWN_FUNCTION(collections);

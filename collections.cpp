@@ -43,11 +43,13 @@ extern "C" {
 
 
 static int le_collections;
-/* Handlers */
+/* Class entries & Handlers */
 static zend_object_handlers vector_handlers;
-
-/* Class entries */
 zend_class_entry *vector_entry;
+
+/*  for StdMap */
+static zend_object_handlers map_handlers;
+zend_class_entry *map_entry;
 
 
 // Method signature Helpers
@@ -189,6 +191,7 @@ int CompareZvalValue::type = 0;
 
 
 #include "std_vector.h"
+#include "std_map.h"
 
 
 
@@ -238,6 +241,15 @@ PHP_MINIT_FUNCTION(collections)
 
 
 
+    /* Register MAP_CLASS_NAME Class */
+    memcpy(&map_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+    map_handlers.clone_obj = NULL;
+    INIT_CLASS_ENTRY(ce, MAP_CLASS_NAME, map_class_methods);
+    map_entry = zend_register_internal_class(&ce TSRMLS_CC);
+    map_entry->create_object = map_object_new;
+
+
+
     // Register PHP Constants
     REGISTER_LONG_CONSTANT("TYPE_SCALAR_INT", TYPE_SCALAR_INT, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("TYPE_SCALAR_FLOAT", TYPE_SCALAR_FLOAT, CONST_CS | CONST_PERSISTENT);
@@ -283,3 +295,4 @@ PHP_MINFO_FUNCTION(collections)
 
 // Implementations
 #include "std_vector.cpp"
+#include "std_map.cpp"
