@@ -4,6 +4,7 @@
 *.lo
 *.o
 *.obj
+test.php
 
 # Precompiled Headers
 *.gch
