@@ -29,11 +29,11 @@ $obj->push('github');
 $obj->push('google');
 $obj->push('bing');
 
-echo 'My Vector size is ' . $vector->size() . " \n";
+$size = $vector->size();
 
-echo 'Item-1: ' . $vector->at(0) . "\n";
-echo 'Item-2: ' . $vector->at(1) . "\n";
-echo 'Item-3: ' . $vector->at(2) . "\n";
+for ($i = 0; $i < $size; $i++) {
+    echo "Item $i: " . $vector->at(0) . "\n";
+}
 ```
 
 #### Class Signature
