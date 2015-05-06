@@ -72,7 +72,7 @@ To deal with list of Array type values
 
 This extension provides following collection classes
 
-1. [StdVector](https://github.com/rnarmala/php-collections-extension/blob/master/docs/StdVector.md) - Vector like functionality
-1. [StdMap](https://github.com/rnarmala/php-collections-extension/blob/master/docs/StdMap.md) - unordered_map like functionality
+1. [StdVector](https://github.com/suvera/php-collections-extension/blob/master/docs/StdVector.md) - Vector like functionality
+1. [StdMap](https://github.com/suvera/php-collections-extension/blob/master/docs/StdMap.md) - unordered_map like functionality
 
 
