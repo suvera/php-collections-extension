@@ -136,9 +136,9 @@ foreach ($arr as $indx => $objA) {
 }
 
 $i = 0;
-while ($obj->hasNext()) {
-    $a = $obj->getValue();
-}
+//while ($obj->hasNext()) {
+//    $a = $obj->getValue();
+//}
 
 foreach ($arr as $indx => $number) {
     if (!$obj->hasValue($number)) {

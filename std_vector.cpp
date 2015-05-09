@@ -1342,84 +1342,7 @@ PHP_METHOD(StdVector, reverse) {
 }
 
 
-class ApplyEachCaller {
-public:
-    zend_fcall_info* fci;
-    zend_fcall_info_cache* fci_cache;
 
-    ApplyEachCaller(zend_fcall_info* fci_, zend_fcall_info_cache* fci_cache_) {
-        fci = fci_;
-        fci_cache = fci_cache_;
-    }
-
-    int __call(zval* obj1) const {
-        zval **args[1], *retval_ptr = NULL;
-
-        args[0] = &obj1;
-
-        fci->retval_ptr_ptr = &retval_ptr;
-        fci->param_count = 1;
-        fci->params = args;
-        fci->no_separation = 0;
-
-        if (zend_call_function(fci, fci_cache TSRMLS_CC) == SUCCESS) {
-            // What should we do here?
-            return 1;
-        }
-
-        return 0;
-    }
-
-    int operator()(zval* obj1) const {
-        return this->__call(obj1);
-    }
-    int operator()(long& val) const {
-        zval* obj1;
-        MAKE_STD_ZVAL(obj1);
-        ZVAL_LONG(obj1, val);
-
-        int ret = this->__call(obj1);
-
-        zval_ptr_dtor(&obj1);
-
-        return ret;
-    }
-    int operator()(double& val) const {
-        zval* obj1;
-        MAKE_STD_ZVAL(obj1);
-        ZVAL_DOUBLE(obj1, val);
-
-        int ret = this->__call(obj1);
-
-        zval_ptr_dtor(&obj1);
-
-        return ret;
-    }
-
-    int operator()(bool val) const {
-        zval* obj1;
-        MAKE_STD_ZVAL(obj1);
-        ZVAL_BOOL(obj1, val);
-
-        int ret = this->__call(obj1);
-
-        zval_ptr_dtor(&obj1);
-
-        return ret;
-    }
-
-    int operator()(string& val) const {
-        zval* obj1;
-        MAKE_STD_ZVAL(obj1);
-        ZVAL_STRING(obj1, val.c_str(), 1);
-
-        int ret = this->__call(obj1);
-
-        zval_ptr_dtor(&obj1);
-
-        return ret;
-    }
-};
 
 // Apply function to all elements in this vector
 PHP_METHOD(StdVector, applyEach) {
@@ -1462,7 +1385,6 @@ PHP_METHOD(StdVector, applyEach) {
             for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
                 clr(*it);
             }
-            //std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
         }
         break;
 

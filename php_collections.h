@@ -60,6 +60,12 @@ typedef unordered_map<string, string> StringStdMap;
 typedef unordered_map<string, bool> BoolStdMap;
 typedef unordered_map<string, zval*> ZvalStdMap;
 
+typedef std::pair<const string, long> IntStdPair;
+typedef std::pair<const string, double> FloatStdPair;
+typedef std::pair<const string, string> StringStdPair;
+typedef std::pair<const string, bool> BoolStdPair;
+typedef std::pair<const string, zval*> ZvalStdPair;
+
 typedef struct _vector_object {
     zend_object std;
     int type;
