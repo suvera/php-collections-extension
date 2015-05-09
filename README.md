@@ -41,6 +41,6 @@ These constants represent Collection *Value* Type.
 This extension provides following collection classes
 
 1. [StdVector](https://github.com/suvera/php-collections-extension/blob/master/docs/StdVector.md) - Vector like functionality
-1. [StdMap](https://github.com/suvera/php-collections-extension/blob/master/docs/StdMap.md) - unordered_map like functionality
-
+2. [StdMap](https://github.com/suvera/php-collections-extension/blob/master/docs/StdMap.md) - unordered_map like functionality
+3. [StdSet](https://github.com/suvera/php-collections-extension/blob/master/docs/StdSet.md) - unordered_set like functionality
 

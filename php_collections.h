@@ -44,6 +44,7 @@ extern "C" {
 
 #define VECTOR_CLASS_NAME "StdVector"
 #define MAP_CLASS_NAME "StdMap"
+#define SET_CLASS_NAME "StdSet"
 
 typedef unsigned long uLongInt;
 
