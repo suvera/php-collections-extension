@@ -18,9 +18,9 @@ $obj->push('k3', 0);
 
 echo 'My Map size is ' . $obj->size() . " \n";
 
-echo 'Item-1: ' . $map->at('k1') . "\n";
-echo 'Item-2: ' . $map->at('k2') . "\n";
-echo 'Item-3: ' . $map->at('k3') . "\n";
+echo 'Item-1: ' . $obj->at('k1') . "\n";
+echo 'Item-2: ' . $obj->at('k2') . "\n";
+echo 'Item-3: ' . $obj->at('k3') . "\n";
 ```
 
 ##### Notes
