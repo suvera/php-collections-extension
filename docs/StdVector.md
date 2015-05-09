@@ -7,16 +7,16 @@ Simple Example:
 
 ```php
 // List of integer values
-$vector = new StdVector(TYPE_SCALAR_INT);
+$obj = new StdVector(TYPE_SCALAR_INT);
 $obj->push(500);
 $obj->push(67);
 $obj->push(0);
 
-echo 'My Vector size is ' . $vector->size() . " \n";
+echo 'My Vector size is ' . $obj->size() . " \n";
 
-echo 'Item-1: ' . $vector->at(0) . "\n";
-echo 'Item-2: ' . $vector->at(1) . "\n";
-echo 'Item-3: ' . $vector->at(2) . "\n";
+echo 'Item-1: ' . $obj->at(0) . "\n";
+echo 'Item-2: ' . $obj->at(1) . "\n";
+echo 'Item-3: ' . $obj->at(2) . "\n";
 ```
 
 ##### Notes
@@ -24,15 +24,15 @@ echo 'Item-3: ' . $vector->at(2) . "\n";
 
 ```php
 // List of String values
-$vector = new StdVector(TYPE_SCALAR_STRING);
+$obj = new StdVector(TYPE_SCALAR_STRING);
 $obj->push('github');
 $obj->push('google');
 $obj->push('bing');
 
-$size = $vector->size();
+$size = $obj->size();
 
 for ($i = 0; $i < $size; $i++) {
-    echo "Item $i = " . $vector->at($i) . "\n";
+    echo "Item $i = " . $obj->at($i) . "\n";
 }
 ```
 
