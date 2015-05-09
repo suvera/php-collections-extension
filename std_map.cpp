@@ -1023,442 +1023,66 @@ PHP_METHOD(StdMap, values) {
 
 
 
-
-
-/** ********************************************************************
- * #####################################################################
- *  Iterator
- *
- */
-static bool hasStdMapOutOfBounds(const map_object *thisObj, const long &position) {
-
-    switch (thisObj->type) {
-        case TYPE_SCALAR_INT:
-            return (position < 0 || position >= ((IntStdMap*) thisObj->vo)->size());
-        break;
-
-        case TYPE_SCALAR_FLOAT:
-            return (position < 0 || position >= ((FloatStdMap*) thisObj->vo)->size());
-        break;
-
-        case TYPE_SCALAR_STRING:
-            return (position < 0 || position >= ((StringStdMap*) thisObj->vo)->size());
-        break;
-
-        case TYPE_SCALAR_BOOL:
-            return (position < 0 || position >= ((BoolStdMap*) thisObj->vo)->size());
-        break;
-
-        case TYPE_COMPLEX_RESOURCE:
-        case TYPE_COMPLEX_OBJECT:
-        case TYPE_COMPLEX_ARRAY:
-            return (position < 0 || position >= ((ZvalStdMap*) thisObj->vo)->size());
-        break;
-    }
-
-    return false;
-}
-
-PHP_METHOD(StdMap, hasNext) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-
-    switch (thisObj->type) {
-        case TYPE_SCALAR_INT:
-        {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-
-            if (thisObj->ptr < vec->size()) {
-                thisObj->ptr++;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_SCALAR_FLOAT:
-        {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-
-            if (thisObj->ptr < vec->size()) {
-                thisObj->ptr++;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_SCALAR_STRING:
-        {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-
-            if (thisObj->ptr < vec->size()) {
-                thisObj->ptr++;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_SCALAR_BOOL:
-        {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-
-            if (thisObj->ptr < vec->size()) {
-                thisObj->ptr++;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_COMPLEX_RESOURCE:
-        case TYPE_COMPLEX_OBJECT:
-        case TYPE_COMPLEX_ARRAY:
-        {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-
-            if (thisObj->ptr < vec->size()) {
-                thisObj->ptr++;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        default:
-        {
-            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
-            return;
-        }
-        break;
-    }
-
-    RETURN_FALSE;
-}
-
-
-PHP_METHOD(StdMap, hasPrev) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-
-    if (thisObj->ptr == 0) {
-        RETURN_FALSE;
-        return;
-    }
-
-    switch (thisObj->type) {
-        case TYPE_SCALAR_INT:
-        {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-
-            if (thisObj->ptr > 0) {
-                thisObj->ptr--;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_SCALAR_FLOAT:
-        {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-
-            if (thisObj->ptr > 0) {
-                thisObj->ptr--;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_SCALAR_STRING:
-        {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-
-            if (thisObj->ptr > 0) {
-                thisObj->ptr--;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_SCALAR_BOOL:
-        {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-
-            if (thisObj->ptr > 0) {
-                thisObj->ptr--;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        case TYPE_COMPLEX_RESOURCE:
-        case TYPE_COMPLEX_OBJECT:
-        case TYPE_COMPLEX_ARRAY:
-        {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-
-            if (thisObj->ptr > 0) {
-                thisObj->ptr--;
-                RETURN_TRUE;
-            }
-        }
-        break;
-
-        default:
-        {
-            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
-            return;
-        }
-        break;
-    }
-
-    RETURN_FALSE;
-}
-
-
-
-PHP_METHOD(StdMap, moveFirst) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-
-    thisObj->ptr = 0;
-
-    RETURN_TRUE;
-}
-
-PHP_METHOD(StdMap, moveLast) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-
-    switch (thisObj->type) {
-        case TYPE_SCALAR_INT:
-        {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-
-            thisObj->ptr = vec->size();
-        }
-        break;
-
-        case TYPE_SCALAR_FLOAT:
-        {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-
-            thisObj->ptr = vec->size();
-        }
-        break;
-
-        case TYPE_SCALAR_STRING:
-        {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-
-            thisObj->ptr = vec->size();
-        }
-        break;
-
-        case TYPE_SCALAR_BOOL:
-        {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-
-            thisObj->ptr = vec->size();
-        }
-        break;
-
-        case TYPE_COMPLEX_RESOURCE:
-        case TYPE_COMPLEX_OBJECT:
-        case TYPE_COMPLEX_ARRAY:
-        {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-
-            thisObj->ptr = vec->size();
-        }
-        break;
-
-        default:
-        {
-            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
-            return;
-        }
-        break;
-    }
-
-    RETURN_TRUE;
-}
-
-PHP_METHOD(StdMap, getPointer) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-
-    long position = thisObj->ptr ? thisObj->ptr - 1 : thisObj->ptr;
-
-    if (hasStdMapOutOfBounds(thisObj, position)) {
-        zend_throw_exception(NULL, "IndexOutOfBoundsException, Internal Position is not in the vector.", 0 TSRMLS_CC);
-        return;
-    }
-
-    RETURN_LONG(position);
-}
-
-PHP_METHOD(StdMap, getKey) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-
-    long position = thisObj->ptr ? thisObj->ptr - 1 : thisObj->ptr;
-
-    if (hasStdMapOutOfBounds(thisObj, position)) {
-        zend_throw_exception(NULL, "IndexOutOfBoundsException, Internal Position is not in the vector.", 0 TSRMLS_CC);
-        return;
-    }
-
-    switch (thisObj->type) {
-        case TYPE_SCALAR_INT:
-        {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_STRING((char *)  it->first.c_str(), 1);
-        }
-        break;
-
-        case TYPE_SCALAR_FLOAT:
-        {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_STRING((char *)  it->first.c_str(), 1);
-        }
-        break;
-
-        case TYPE_SCALAR_STRING:
-        {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_STRING((char *)  it->first.c_str(), 1);
-        }
-        break;
-
-        case TYPE_SCALAR_BOOL:
-        {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_STRING((char *)  it->first.c_str(), 1);
-        }
-        break;
-
-        case TYPE_COMPLEX_RESOURCE:
-        case TYPE_COMPLEX_OBJECT:
-        case TYPE_COMPLEX_ARRAY:
-        {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_STRING((char *)  it->first.c_str(), 1);
-        }
-        break;
-
-        default:
-        {
-            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
-            return;
-        }
-        break;
-    }
-}
-
-
-
-PHP_METHOD(StdMap, getValue) {
-    zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-    long position = thisObj->ptr;
-
-    if (position > 0) {
-        position--;
-    }
-
-    if (hasStdMapOutOfBounds(thisObj, position)) {
-        zend_throw_exception(NULL, "IndexOutOfBoundsException, Internal Position is not in the vector.", 0 TSRMLS_CC);
-        return;
-    }
-
-    switch (thisObj->type) {
-        case TYPE_SCALAR_INT:
-        {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_LONG(it->second);
-        }
-        break;
-
-        case TYPE_SCALAR_FLOAT:
-        {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_DOUBLE(it->second);
-        }
-        break;
-
-        case TYPE_SCALAR_STRING:
-        {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_STRING((char *) it->second.c_str(), 1);
-        }
-        break;
-
-        case TYPE_SCALAR_BOOL:
-        {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            RETURN_BOOL(it->second);
-        }
-        break;
-
-        case TYPE_COMPLEX_RESOURCE:
-        case TYPE_COMPLEX_OBJECT:
-        case TYPE_COMPLEX_ARRAY:
-        {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            auto it = vec->cbegin();
-            std::advance(it, position);
-            zval *val = (zval*) it->second;
-
-            if (val == NULL) {
-                RETURN_NULL();
-            } else {
-                RETVAL_ZVAL(val, 1, 0);
-            }
-        }
-        break;
-
-        default:
-        {
-            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
-            return;
-        }
-        break;
-    }
-
-}
-
-PHP_METHOD(StdMap, seek) {
-    long seekPos = 0;
-
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &seekPos) == FAILURE) {
+// Apply function to all elements in this map
+PHP_METHOD(StdMap, applyEach) {
+    zend_fcall_info fci;
+    zend_fcall_info_cache fci_cache;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "f", &fci, &fci_cache) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
-
     zval *object = getThis();
     map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
-    if (hasStdMapOutOfBounds(thisObj, seekPos)) {
-        zend_throw_exception(NULL, "IndexOutOfBoundsException, Internal Position is not in the vector.", 0 TSRMLS_CC);
-        return;
-    }
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
 
-    thisObj->ptr = seekPos + 1;
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            ApplyEachCaller clr(&fci, &fci_cache);
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
+                clr(*it);
+            }
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
 
     RETURN_TRUE;
 }

@@ -255,6 +255,170 @@ struct zvalCompareIdentical {
 };
 
 
+/**
+ * Call a user function for each item in the container
+ *
+ */
+class ApplyEachCaller {
+public:
+    zend_fcall_info* fci;
+    zend_fcall_info_cache* fci_cache;
+    mutable long counter;
+
+    ApplyEachCaller(zend_fcall_info* fci_, zend_fcall_info_cache* fci_cache_) {
+        fci = fci_;
+        fci_cache = fci_cache_;
+        counter = 0;
+    }
+
+    int __callInternal(zval ***args, zval* retval_ptr) const {
+
+        fci->retval_ptr_ptr = &retval_ptr;
+        fci->param_count = 2;
+        fci->params = args;
+        fci->no_separation = 0;
+
+        if (zend_call_function(fci, fci_cache TSRMLS_CC) == SUCCESS) {
+            // What should we do here?
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int __call(zval* obj1) const {
+        zval **args[2], *obj2, *retval_ptr = NULL;
+
+        MAKE_STD_ZVAL(obj2);
+        ZVAL_LONG(obj2, counter);
+        counter++;
+
+        args[0] = &obj1;
+        args[1] = &obj2;
+
+        return this->__callInternal(args, retval_ptr);
+    }
+
+    int __call(zval* obj1, const string& key) const {
+        zval **args[2], *obj2, *retval_ptr = NULL;
+
+        MAKE_STD_ZVAL(obj2);
+        ZVAL_STRING(obj2, key.c_str(), 1);
+
+        args[0] = &obj1;
+        args[1] = &obj2;
+
+        int ret = this->__callInternal(args, retval_ptr);
+
+        zval_ptr_dtor(&obj2);
+        return ret;
+    }
+
+    int operator()(zval* obj1) const {
+        return this->__call(obj1);
+    }
+
+    int operator()(long& val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_LONG(obj1, val);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+    int operator()(double& val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_DOUBLE(obj1, val);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(bool val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_BOOL(obj1, val);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(const string& val) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_STRING(obj1, val.c_str(), 1);
+
+        int ret = this->__call(obj1);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(IntStdPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_LONG(obj1, p.second);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(FloatStdPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_DOUBLE(obj1, p.second);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(StringStdPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_STRING(obj1, p.second.c_str(), 1);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(BoolStdPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_BOOL(obj1, p.second);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(ZvalStdPair& p) const {
+        return this->__call(p.second, p.first);
+    }
+};
+
+
 
 
 #include "std_vector.h"

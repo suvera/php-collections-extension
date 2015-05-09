@@ -11,12 +11,12 @@ Simple Example:
 
 ```php
 // Map of integer values
-$map = new StdMap(TYPE_SCALAR_INT);
+$obj = new StdMap(TYPE_SCALAR_INT);
 $obj->push('k1', 500);
 $obj->push('k2', 67);
 $obj->push('k3', 0);
 
-echo 'My Map size is ' . $map->size() . " \n";
+echo 'My Map size is ' . $obj->size() . " \n";
 
 echo 'Item-1: ' . $map->at('k1') . "\n";
 echo 'Item-2: ' . $map->at('k2') . "\n";
@@ -28,16 +28,14 @@ echo 'Item-3: ' . $map->at('k3') . "\n";
 
 ```php
 // Map of String values
-$map = new StdMap(TYPE_SCALAR_STRING);
+$obj = new StdMap(TYPE_SCALAR_STRING);
 $obj->push('git', 'github');
 $obj->push('goog', 'google');
 $obj->push('b', 'bing');
 
-echo 'My Map size is ' . $map->size() . " \n";
-
-echo 'Item-1: ' . $map->at('git') . "\n";
-echo 'Item-2: ' . $map->at('goog') . "\n";
-echo 'Item-3: ' . $map->at('b') . "\n";
+$obj->applyEach(function($value, $key) {
+    echo "$key = $val \n";
+});
 ```
 
 #### Class Signature
@@ -107,6 +105,10 @@ class StdMap {
      */
     public function hasKey($key) {}
 
+    /**
+     * @param callback
+     */
+    public function applyEach(callback) {}
 }
 ```
 

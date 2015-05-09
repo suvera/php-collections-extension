@@ -25,13 +25,7 @@ extern PHP_METHOD(StdSet, getClass);
 extern PHP_METHOD(StdSet, values);
 
 // iterator
-extern PHP_METHOD(StdSet, hasNext);
-extern PHP_METHOD(StdSet, hasPrev);
-extern PHP_METHOD(StdSet, moveFirst);
-extern PHP_METHOD(StdSet, moveLast);
-extern PHP_METHOD(StdSet, getPointer);
-extern PHP_METHOD(StdSet, getValue);
-extern PHP_METHOD(StdSet, seek);
+extern PHP_METHOD(StdSet, applyEach);
 
 static zend_function_entry set_class_methods[] = {
     PHP_ME(StdSet, size, NULL, ZEND_ACC_PUBLIC)
@@ -44,13 +38,7 @@ static zend_function_entry set_class_methods[] = {
 	PHP_ME(StdSet, hasValue, arginfo_vector_add, ZEND_ACC_PUBLIC)
 	PHP_ME(StdSet, __construct, arginfo_vector_construct, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 
-    PHP_ME(StdSet, hasNext, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, hasPrev, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, moveFirst, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, moveLast, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, getPointer, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, getValue, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, seek, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdSet, applyEach, NULL, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };
