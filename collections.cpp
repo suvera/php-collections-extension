@@ -16,21 +16,36 @@
 #include <math.h>
 #include <algorithm>
 #include <vector>
-#include <unordered_map>
 #include <functional>
-
 
 using std::cout;
 using std::endl;
 using std::vector;
 using std::string;
-using std::unordered_map;
-
-
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#ifdef HAVE_CXX0X
+#include <unordered_map>
+#elif HAVE_TR1
+#include <tr1/unordered_map>
+#else
+#include <unordered_map>
+#endif
+
+using std::unordered_map;
+
+#ifdef HAVE_CXX0X
+#include <unordered_set>
+#elif HAVE_TR1
+#include <tr1/unordered_set>
+#else
+#include <unordered_set>
+#endif
+
+using std::unordered_set;
 
 extern "C" {
 #include "php.h"
@@ -47,9 +62,13 @@ static int le_collections;
 static zend_object_handlers vector_handlers;
 zend_class_entry *vector_entry;
 
-/*  for StdMap */
+/* for StdMap */
 static zend_object_handlers map_handlers;
 zend_class_entry *map_entry;
+
+/* for StdSet */
+static zend_object_handlers set_handlers;
+zend_class_entry *set_entry;
 
 
 // Method signature Helpers
@@ -189,9 +208,58 @@ struct CompareZvalValue {
 
 int CompareZvalValue::type = 0;
 
+struct zvalCompareIdentical {
+
+    bool operator()(zval* op1, zval* op2) const {
+
+        if (Z_TYPE_P(op1) != Z_TYPE_P(op2)) {
+            return false;
+        }
+
+        bool suc = false;
+
+        switch (Z_TYPE_P(op1)) {
+            case IS_NULL:
+                suc = true;
+                break;
+            case IS_BOOL:
+            case IS_LONG:
+            case IS_RESOURCE:
+                suc = (Z_LVAL_P(op1) == Z_LVAL_P(op2));
+                break;
+            case IS_DOUBLE:
+                suc = (Z_DVAL_P(op1) == Z_DVAL_P(op2));
+                break;
+            case IS_STRING:
+                suc = ((Z_STRLEN_P(op1) == Z_STRLEN_P(op2))
+                    && (!memcmp(Z_STRVAL_P(op1), Z_STRVAL_P(op2), Z_STRLEN_P(op1))));
+                break;
+            case IS_ARRAY:
+                suc = (Z_ARRVAL_P(op1) == Z_ARRVAL_P(op2) ||
+                    zend_hash_compare(Z_ARRVAL_P(op1), Z_ARRVAL_P(op2), (compare_func_t) hash_zval_identical_function, 1 TSRMLS_CC)==0);
+                break;
+            case IS_OBJECT:
+                if (Z_OBJ_HT_P(op1) == Z_OBJ_HT_P(op2)) {
+                    suc = (Z_OBJ_HANDLE_P(op1) == Z_OBJ_HANDLE_P(op2));
+                } else {
+                    suc = false;
+                }
+                break;
+            default:
+                suc = false;
+                break;
+        }
+
+        return suc;
+    }
+};
+
+
+
 
 #include "std_vector.h"
 #include "std_map.h"
+#include "std_set.h"
 
 
 
@@ -249,6 +317,13 @@ PHP_MINIT_FUNCTION(collections)
     map_entry->create_object = map_object_new;
 
 
+    /* Register SET_CLASS_NAME Class */
+    memcpy(&set_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+    set_handlers.clone_obj = NULL;
+    INIT_CLASS_ENTRY(ce, SET_CLASS_NAME, set_class_methods);
+    set_entry = zend_register_internal_class(&ce TSRMLS_CC);
+    set_entry->create_object = set_object_new;
+
 
     // Register PHP Constants
     REGISTER_LONG_CONSTANT("TYPE_SCALAR_INT", TYPE_SCALAR_INT, CONST_CS | CONST_PERSISTENT);
@@ -296,3 +371,4 @@ PHP_MINFO_FUNCTION(collections)
 // Implementations
 #include "std_vector.cpp"
 #include "std_map.cpp"
+#include "std_set.cpp"
