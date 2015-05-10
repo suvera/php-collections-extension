@@ -58,7 +58,7 @@ static zend_function_entry set_class_methods[] = {
     PHP_ME(StdSet, diff, NULL, ZEND_ACC_PUBLIC)
 
     PHP_ME(StdSet, serialize, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdSet, unserialize, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdSet, unserialize, arginfo_unserialize, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };

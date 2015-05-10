@@ -1294,3 +1294,289 @@ PHP_METHOD(StdSet, diff) {
         break;
     }
 }
+
+
+
+
+
+
+
+/**
+ * To Array
+ *
+ */
+static int setToArray(set_object *thisObj, zval *arr TSRMLS_DC) {
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdSet *vec = (IntStdSet*) thisObj->vo;
+
+            array_init_size(arr, vec->size());
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
+                add_next_index_long(arr, *it);
+            }
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdSet *vec = (FloatStdSet*) thisObj->vo;
+
+            array_init_size(arr, vec->size());
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
+                add_next_index_double(arr, *it);
+            }
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdSet *vec = (StringStdSet*) thisObj->vo;
+
+            array_init_size(arr, vec->size());
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
+                add_next_index_string(arr, (*it).c_str(), 1);
+            }
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdSet *vec = (BoolStdSet*) thisObj->vo;
+
+            array_init_size(arr, vec->size());
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
+                add_next_index_bool(arr, *it);
+            }
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdSet *vec = (ZvalStdSet*) thisObj->vo;
+
+            array_init_size(arr, vec->size());
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
+                add_next_index_zval(arr, *it);
+                add_reference_count(*it);
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return 0;
+        }
+        break;
+    }
+
+    return 1;
+}
+
+
+/**
+ * serialize
+ */
+PHP_METHOD(StdSet, serialize) {
+    zval *val, *wrapper;
+	php_serialize_data_t var_hash;
+	smart_str buf = {0};
+    zval *object = getThis();
+
+    set_object *thisObj = (set_object *) zend_object_store_get_object(object TSRMLS_CC);
+
+    MAKE_STD_ZVAL(wrapper);
+    MAKE_STD_ZVAL(val);
+
+    array_init(wrapper);
+    add_assoc_long(wrapper, "type", thisObj->type);
+
+    setToArray(thisObj, val TSRMLS_CC);
+
+    add_assoc_zval(wrapper, "data", val);
+
+	Z_TYPE_P(return_value) = IS_STRING;
+	Z_STRVAL_P(return_value) = NULL;
+	Z_STRLEN_P(return_value) = 0;
+
+	PHP_VAR_SERIALIZE_INIT(var_hash);
+	php_var_serialize(&buf, &wrapper, &var_hash TSRMLS_CC);
+	PHP_VAR_SERIALIZE_DESTROY(var_hash);
+
+    zval_ptr_dtor(&val);
+    zval_ptr_dtor(&wrapper);
+
+	if (EG(exception)) {
+		smart_str_free(&buf);
+		RETURN_FALSE;
+	}
+
+	if (buf.c) {
+		RETURN_STRINGL(buf.c, buf.len, 0);
+	} else {
+		RETURN_NULL();
+	}
+}
+
+
+/**
+ * unserialize
+ */
+PHP_METHOD(StdSet, unserialize) {
+
+    char *serialized = NULL;
+    int buf_len = 0;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &serialized, &buf_len) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+	const unsigned char *p;
+	php_unserialize_data_t var_hash;
+
+	if (buf_len == 0) {
+		RETURN_FALSE;
+	}
+
+	zval *object = getThis();
+    set_object *thisObj = (set_object *) zend_object_store_get_object(object TSRMLS_CC);
+
+	zval *arr;
+	MAKE_STD_ZVAL(arr);
+
+	p = (const unsigned char*) serialized;
+	PHP_VAR_UNSERIALIZE_INIT(var_hash);
+
+	if (!php_var_unserialize(&arr, &p, p + buf_len, &var_hash TSRMLS_CC)) {
+		PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
+		zval_dtor(arr);
+
+		if (!EG(exception)) {
+		    char buffer[512];
+		    sprintf(buffer, "Error at offset %ld of %d bytes", (long)((char*)p - serialized), buf_len);
+		    zend_throw_exception(NULL, buffer, 0 TSRMLS_CC);
+		    return;
+		}
+
+		RETURN_FALSE;
+	}
+
+	PHP_VAR_UNSERIALIZE_DESTROY(var_hash);
+
+    zval** zv_type = NULL;
+	if (zend_hash_find(Z_ARRVAL_P(arr), "type", sizeof("type"), (void **) &zv_type) != SUCCESS) {
+        //zval_ptr_dtor(zv_type);
+        zval_dtor(arr);
+        zend_throw_exception(NULL, "Invalid serialized data, could not find 'type'.", 0 TSRMLS_CC);
+        return;
+	}
+
+	thisObj->type = Z_LVAL_P(*zv_type);
+
+	zval** zv_data = NULL;
+    if (zend_hash_find(Z_ARRVAL_P(arr), "data", sizeof("data"), (void **) &zv_data) != SUCCESS) {
+        //zval_ptr_dtor(zv_data);
+        zval_dtor(arr);
+        zend_throw_exception(NULL, "Invalid serialized data, could not find 'type'.", 0 TSRMLS_CC);
+        return;
+    }
+
+    HashPosition position;
+    zval **data = NULL;
+    int c = 0;
+
+    for (zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(*zv_data), &position);
+         zend_hash_get_current_data_ex(Z_ARRVAL_P(*zv_data), (void**) &data, &position) == SUCCESS;
+         zend_hash_move_forward_ex(Z_ARRVAL_P(*zv_data), &position)) {
+
+        // by now we have data set and can use Z_ macros for accessing type and variable data.
+
+        switch (Z_LVAL_P(*zv_type)) {
+            case TYPE_SCALAR_INT:
+            {
+                if (c == 0) {
+                    IntStdSet* vec = new IntStdSet();
+                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
+                }
+
+                IntStdSet *vec = (IntStdSet*) thisObj->vo;
+                vec->insert(Z_LVAL_P(*data));
+            }
+            break;
+
+            case TYPE_SCALAR_FLOAT:
+            {
+                if (c == 0) {
+                    FloatStdSet* vec = new FloatStdSet();
+                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
+                }
+
+                FloatStdSet *vec = (FloatStdSet*) thisObj->vo;
+                vec->insert(Z_DVAL_P(*data));
+            }
+            break;
+
+            case TYPE_SCALAR_STRING:
+            {
+                if (c == 0) {
+                    StringStdSet* vec = new StringStdSet();
+                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
+                }
+
+                StringStdSet *vec = (StringStdSet*) thisObj->vo;
+                vec->insert(Z_STRVAL_P(*data));
+            }
+            break;
+
+            case TYPE_SCALAR_BOOL:
+            {
+                if (c == 0) {
+                    BoolStdSet* vec = new BoolStdSet();
+                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
+                }
+
+                BoolStdSet *vec = (BoolStdSet*) thisObj->vo;
+                vec->insert(Z_BVAL_P(*data));
+            }
+            break;
+
+            case TYPE_COMPLEX_RESOURCE:
+            case TYPE_COMPLEX_OBJECT:
+            case TYPE_COMPLEX_ARRAY:
+            {
+                if (c == 0) {
+                    ZvalStdSet* vec = new ZvalStdSet();
+                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
+                }
+
+                ZvalStdSet *vec = (ZvalStdSet*) thisObj->vo;
+                vec->insert(*data);
+                //add_reference_count(*data);
+            }
+            break;
+
+            default:
+            {
+                zend_throw_exception(NULL, "Invalid data type, could not unserialize", 0 TSRMLS_CC);
+                return;
+            }
+            break;
+        }
+
+        c = 1;
+    }
+
+    zval_ptr_dtor(zv_type);
+    zval_ptr_dtor(zv_data);
+	zval_dtor(arr);
+
+}

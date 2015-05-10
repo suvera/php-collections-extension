@@ -1609,7 +1609,7 @@ PHP_METHOD(StdMap, diff) {
  * To Array
  *
  */
-static int toArray(map_object *thisObj, zval *arr TSRMLS_DC) {
+static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
@@ -1698,7 +1698,7 @@ PHP_METHOD(StdMap, serialize) {
     array_init(wrapper);
     add_assoc_long(wrapper, "type", thisObj->type);
 
-    toArray(thisObj, val TSRMLS_CC);
+    mapToArray(thisObj, val TSRMLS_CC);
 
     add_assoc_zval(wrapper, "data", val);
 
@@ -1707,7 +1707,7 @@ PHP_METHOD(StdMap, serialize) {
 	Z_STRLEN_P(return_value) = 0;
 
 	PHP_VAR_SERIALIZE_INIT(var_hash);
-	php_var_serialize(&buf, &val, &var_hash TSRMLS_CC);
+	php_var_serialize(&buf, &wrapper, &var_hash TSRMLS_CC);
 	PHP_VAR_SERIALIZE_DESTROY(var_hash);
 
     zval_ptr_dtor(&val);
@@ -1730,10 +1730,11 @@ PHP_METHOD(StdMap, serialize) {
  * unserialize
  */
 PHP_METHOD(StdMap, unserialize) {
-    char *buf = NULL;
+
+    char *serialized = NULL;
     int buf_len = 0;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &buf, &buf_len) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &serialized, &buf_len) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
@@ -1749,10 +1750,9 @@ PHP_METHOD(StdMap, unserialize) {
     map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
 	zval *arr;
-
 	MAKE_STD_ZVAL(arr);
 
-	p = (const unsigned char*) buf;
+	p = (const unsigned char*) serialized;
 	PHP_VAR_UNSERIALIZE_INIT(var_hash);
 
 	if (!php_var_unserialize(&arr, &p, p + buf_len, &var_hash TSRMLS_CC)) {
@@ -1761,7 +1761,7 @@ PHP_METHOD(StdMap, unserialize) {
 
 		if (!EG(exception)) {
 		    char buffer[512];
-		    sprintf(buffer, "Error at offset %ld of %d bytes", (long)((char*)p - buf), buf_len);
+		    sprintf(buffer, "Error at offset %ld of %d bytes", (long)((char*)p - serialized), buf_len);
 		    zend_throw_exception(NULL, buffer, 0 TSRMLS_CC);
 		    return;
 		}
@@ -1779,6 +1779,8 @@ PHP_METHOD(StdMap, unserialize) {
         return;
 	}
 
+	thisObj->type = Z_LVAL_P(*zv_type);
+
 	zval** zv_data = NULL;
     if (zend_hash_find(Z_ARRVAL_P(arr), "data", sizeof("data"), (void **) &zv_data) != SUCCESS) {
         //zval_ptr_dtor(zv_data);
@@ -1795,54 +1797,66 @@ PHP_METHOD(StdMap, unserialize) {
          zend_hash_get_current_data_ex(Z_ARRVAL_P(*zv_data), (void**) &data, &position) == SUCCESS;
          zend_hash_move_forward_ex(Z_ARRVAL_P(*zv_data), &position)) {
 
-        /* by now we have data set and can use Z_ macros for accessing type and variable data */
+        // by now we have data set and can use Z_ macros for accessing type and variable data.
 
         char *key = NULL;
         uint  klen;
-        ulong index;
+        ulong index = 0;
 
         zend_hash_get_current_key_ex(Z_ARRVAL_P(*zv_data), &key, &klen, &index, 0, &position);
 
-        // HASH_KEY_IS_STRING : the key is a string, key and klen will be set */
-        // ELSE : we assume the key to be long, index will be set */
+        // HASH_KEY_IS_STRING : the key is a string, key and klen will be set
+        // ELSE : we assume the key to be long, index will be set
 
         switch (Z_LVAL_P(*zv_type)) {
             case TYPE_SCALAR_INT:
             {
-                IntStdMap *vec = (IntStdMap*) thisObj->vo;
                 if (c == 0) {
+                    IntStdMap* vec = new IntStdMap();
                     vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
                 }
+
+                IntStdMap *vec = (IntStdMap*) thisObj->vo;
                 (*vec)[key] = Z_LVAL_P(*data);
             }
             break;
 
             case TYPE_SCALAR_FLOAT:
             {
-                FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
                 if (c == 0) {
+                    FloatStdMap* vec = new FloatStdMap();
                     vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
                 }
+
+                FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
                 (*vec)[key] = Z_DVAL_P(*data);
             }
             break;
 
             case TYPE_SCALAR_STRING:
             {
-                StringStdMap *vec = (StringStdMap*) thisObj->vo;
                 if (c == 0) {
+                    StringStdMap* vec = new StringStdMap();
                     vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
                 }
-                (*vec)[key] = Z_STRLEN_P(*data);
+
+                StringStdMap *vec = (StringStdMap*) thisObj->vo;
+                (*vec)[key] = Z_STRVAL_P(*data);
             }
             break;
 
             case TYPE_SCALAR_BOOL:
             {
-                BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
                 if (c == 0) {
+                    BoolStdMap* vec = new BoolStdMap();
                     vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
                 }
+
+                BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
                 (*vec)[key] = Z_BVAL_P(*data);
             }
             break;
@@ -1851,10 +1865,13 @@ PHP_METHOD(StdMap, unserialize) {
             case TYPE_COMPLEX_OBJECT:
             case TYPE_COMPLEX_ARRAY:
             {
-                ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
                 if (c == 0) {
+                    ZvalStdMap* vec = new ZvalStdMap();
                     vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    thisObj->vo = vec;
                 }
+
+                ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
                 (*vec)[key] = *data;
                 //add_reference_count(*data);
             }
@@ -1874,5 +1891,6 @@ PHP_METHOD(StdMap, unserialize) {
     zval_ptr_dtor(zv_type);
     zval_ptr_dtor(zv_data);
 	zval_dtor(arr);
+
 }
 

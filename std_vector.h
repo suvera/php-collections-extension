@@ -90,7 +90,7 @@ static zend_function_entry vector_class_methods[] = {
     PHP_ME(StdVector, diff, NULL, ZEND_ACC_PUBLIC)
 
     PHP_ME(StdVector, serialize, NULL, ZEND_ACC_PUBLIC)
-    PHP_ME(StdVector, unserialize, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdVector, unserialize, arginfo_unserialize, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };
