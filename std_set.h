@@ -35,6 +35,10 @@ extern PHP_METHOD(StdSet, merge);
 extern PHP_METHOD(StdSet, intersect);
 extern PHP_METHOD(StdSet, diff);
 
+// Implement Serializable
+extern PHP_METHOD(StdSet, serialize);
+extern PHP_METHOD(StdSet, unserialize);
+
 static zend_function_entry set_class_methods[] = {
     PHP_ME(StdSet, size, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdSet, reserve, arginfo_vector_reserve, ZEND_ACC_PUBLIC)
@@ -52,6 +56,9 @@ static zend_function_entry set_class_methods[] = {
     PHP_ME(StdSet, merge, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdSet, intersect, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdSet, diff, NULL, ZEND_ACC_PUBLIC)
+
+    PHP_ME(StdSet, serialize, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdSet, unserialize, arginfo_unserialize, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };

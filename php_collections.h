@@ -29,6 +29,11 @@ extern "C" {
 #include "TSRM.h"
 #endif
 
+//#include "zend_API.h"
+#include "ext/standard/php_var.h"
+#include "ext/standard/php_smart_str.h"
+//#include "ext/standard/php_array.h"
+#include "zend_interfaces.h"
 #include "zend_exceptions.h"
 }
 

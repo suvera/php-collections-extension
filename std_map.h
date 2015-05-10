@@ -24,6 +24,10 @@ extern PHP_METHOD(StdMap, merge);
 extern PHP_METHOD(StdMap, intersect);
 extern PHP_METHOD(StdMap, diff);
 
+// Implement Serializable
+extern PHP_METHOD(StdMap, serialize);
+extern PHP_METHOD(StdMap, unserialize);
+
 
 static zend_function_entry map_class_methods[] = {
     PHP_ME(StdMap, size, NULL, ZEND_ACC_PUBLIC)
@@ -49,6 +53,9 @@ static zend_function_entry map_class_methods[] = {
     PHP_ME(StdMap, merge, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdMap, intersect, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdMap, diff, NULL, ZEND_ACC_PUBLIC)
+
+    PHP_ME(StdMap, serialize, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, unserialize, arginfo_unserialize, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };
@@ -94,13 +101,9 @@ static void map_object_free_storage(map_object *intern TSRMLS_DC)
             {
                 ZvalStdMap *tmp = static_cast<ZvalStdMap*>(intern->vo);
 
-                //Z_DELREF_P(new_var);
                 for (auto it = tmp->cbegin(); it != tmp->cend(); ++it ) {
                     delete_reference_count(it->second);
                 }
-
-                // free(): invalid pointer
-                //std::for_each(tmp->begin(), tmp->end(), std::default_delete<zval>());
 
                 tmp->clear();
                 delete tmp;
