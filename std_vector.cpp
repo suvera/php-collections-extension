@@ -2207,7 +2207,7 @@ PHP_METHOD(StdVector, seek) {
 PHP_METHOD(StdVector, append) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, &vector_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, vector_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
@@ -2294,7 +2294,8 @@ T* mergeVectors(const T* vec, const T* otherVec) {
 
     merged->reserve(vec->size() + otherVec->size());
 
-    std::copy(vec->begin(), vec->end(), merged->begin());
+    merged->insert(merged->begin(), vec->begin(), vec->end());
+
     merged->insert(merged->end(), otherVec->begin(), otherVec->end());
 
     return merged;
@@ -2304,7 +2305,7 @@ T* mergeVectors(const T* vec, const T* otherVec) {
 PHP_METHOD(StdVector, merge) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, &vector_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, vector_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
@@ -2461,7 +2462,7 @@ T* intersectZvalVectors(const T* vec, const T* otherVec, int type) {
 PHP_METHOD(StdVector, intersect) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, &vector_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, vector_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
@@ -2628,7 +2629,7 @@ T* diffZvalVectors(const T* vec, const T* otherVec, int type) {
 PHP_METHOD(StdVector, diff) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, &vector_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, vector_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
