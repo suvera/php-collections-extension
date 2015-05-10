@@ -470,6 +470,7 @@ PHP_MINIT_FUNCTION(collections)
     INIT_CLASS_ENTRY(ce, VECTOR_CLASS_NAME, vector_class_methods);
     vector_entry = zend_register_internal_class(&ce TSRMLS_CC);
     vector_entry->create_object = vector_object_new;
+    zend_class_implements(vector_entry TSRMLS_DC, 1, zend_ce_serializable);
 
 
 
@@ -479,6 +480,7 @@ PHP_MINIT_FUNCTION(collections)
     INIT_CLASS_ENTRY(ce, MAP_CLASS_NAME, map_class_methods);
     map_entry = zend_register_internal_class(&ce TSRMLS_CC);
     map_entry->create_object = map_object_new;
+    zend_class_implements(map_entry TSRMLS_DC, 1, zend_ce_serializable);
 
 
     /* Register SET_CLASS_NAME Class */
@@ -487,6 +489,7 @@ PHP_MINIT_FUNCTION(collections)
     INIT_CLASS_ENTRY(ce, SET_CLASS_NAME, set_class_methods);
     set_entry = zend_register_internal_class(&ce TSRMLS_CC);
     set_entry->create_object = set_object_new;
+    zend_class_implements(set_entry TSRMLS_DC, 1, zend_ce_serializable);
 
 
     // Register PHP Constants
@@ -529,7 +532,6 @@ PHP_MINFO_FUNCTION(collections)
 	php_info_print_table_end();
 
 }
-
 
 
 // Implementations
