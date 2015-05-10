@@ -318,7 +318,7 @@ public:
         return this->__call(obj1);
     }
 
-    int operator()(long& val) const {
+    int operator()(long const& val) const {
         zval* obj1;
         MAKE_STD_ZVAL(obj1);
         ZVAL_LONG(obj1, val);
@@ -329,7 +329,7 @@ public:
 
         return ret;
     }
-    int operator()(double& val) const {
+    int operator()(double const& val) const {
         zval* obj1;
         MAKE_STD_ZVAL(obj1);
         ZVAL_DOUBLE(obj1, val);
@@ -341,7 +341,7 @@ public:
         return ret;
     }
 
-    int operator()(bool val) const {
+    int operator()(bool const& val) const {
         zval* obj1;
         MAKE_STD_ZVAL(obj1);
         ZVAL_BOOL(obj1, val);
@@ -353,7 +353,7 @@ public:
         return ret;
     }
 
-    int operator()(const string& val) const {
+    int operator()(string const& val) const {
         zval* obj1;
         MAKE_STD_ZVAL(obj1);
         ZVAL_STRING(obj1, val.c_str(), 1);

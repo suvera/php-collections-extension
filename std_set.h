@@ -27,6 +27,14 @@ extern PHP_METHOD(StdSet, values);
 // iterator
 extern PHP_METHOD(StdSet, applyEach);
 
+// Take other StdSet as input append to elements into this
+extern PHP_METHOD(StdSet, append);
+
+// Take other StdSet as input and return StdSet
+extern PHP_METHOD(StdSet, merge);
+extern PHP_METHOD(StdSet, intersect);
+extern PHP_METHOD(StdSet, diff);
+
 static zend_function_entry set_class_methods[] = {
     PHP_ME(StdSet, size, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdSet, reserve, arginfo_vector_reserve, ZEND_ACC_PUBLIC)
@@ -39,6 +47,11 @@ static zend_function_entry set_class_methods[] = {
 	PHP_ME(StdSet, __construct, arginfo_vector_construct, ZEND_ACC_PUBLIC|ZEND_ACC_CTOR)
 
     PHP_ME(StdSet, applyEach, NULL, ZEND_ACC_PUBLIC)
+
+    PHP_ME(StdSet, append, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdSet, merge, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdSet, intersect, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdSet, diff, NULL, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };

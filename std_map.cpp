@@ -425,7 +425,7 @@ PHP_METHOD(StdMap, push) {
                 }
             } else {
                 if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sO!", &key, &keyLength, &val, thisObj->objCe) == FAILURE) {
-                    zend_throw_exception(NULL, "Invalid input parameters to the method, Could not add other objects into this vector.", 0 TSRMLS_CC);
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Could not add other objects into this map.", 0 TSRMLS_CC);
                     return;
                 }
             }
@@ -827,7 +827,7 @@ PHP_METHOD(StdMap, hasValue) {
 
 
 /**
- * return keys as StdVector
+ * return keys as StdMap
  */
 PHP_METHOD(StdMap, keys) {
     zval *object = getThis();
@@ -923,7 +923,7 @@ PHP_METHOD(StdMap, keys) {
 }
 
 /**
- * return values as StdVector
+ * return values as StdMap
  */
 PHP_METHOD(StdMap, values) {
     zval *object = getThis();
@@ -1085,4 +1085,517 @@ PHP_METHOD(StdMap, applyEach) {
     }
 
     RETURN_TRUE;
+}
+
+
+
+
+
+
+
+// Take other StdMap as input append to elements into this
+PHP_METHOD(StdMap, append) {
+    zval *other;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+    zval *object = getThis();
+
+    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+
+    if (thisObj->type != otherObj->type) {
+        zend_throw_exception(NULL, "Could not append elements to another type of map.", 0 TSRMLS_CC);
+        return;
+    }
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+            vec->reserve(vec->size() + otherVec->size());
+            vec->insert(otherVec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+            vec->reserve(vec->size() + otherVec->size());
+            vec->insert(otherVec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+            vec->reserve(vec->size() + otherVec->size());
+            vec->insert(otherVec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+            vec->reserve(vec->size() + otherVec->size());
+            vec->insert(otherVec->begin(), vec->end());
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+            vec->reserve(vec->size() + otherVec->size());
+
+            for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+                if (!vec->count(it->first)) {
+                    vec->insert(*it);
+                    add_reference_count(it->second);
+                }
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+
+    RETURN_TRUE;
+}
+
+// Take other StdMap as input and return StdMap
+template<class T>
+T* mergeStdMaps(const T* vec, const T* otherVec) {
+    T *merged = new T();
+
+    merged->reserve(vec->size() + otherVec->size());
+
+    merged->insert(vec->begin(), vec->end());
+    merged->insert(otherVec->begin(), otherVec->end());
+
+    return merged;
+}
+
+
+PHP_METHOD(StdMap, merge) {
+    zval *other;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+    zval *object = getThis();
+
+    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+
+    if (thisObj->type != otherObj->type) {
+        zend_throw_exception(NULL, "Could not merge elements in to another type of map.", 0 TSRMLS_CC);
+        return;
+    }
+
+    object_init_ex(return_value, map_entry);
+    map_object* resultObject = (map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    resultObject->type = thisObj->type;
+    resultObject->objCe = thisObj->objCe;
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+
+            resultObject->vo = mergeStdMaps<IntStdMap>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+
+            resultObject->vo = mergeStdMaps<FloatStdMap>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+
+            resultObject->vo = mergeStdMaps<StringStdMap>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+
+            resultObject->vo = mergeStdMaps<BoolStdMap>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+
+            ZvalStdMap *merged = (ZvalStdMap*) mergeStdMaps<ZvalStdMap>(vec, otherVec);
+            resultObject->vo = merged;
+
+            for (auto it = merged->begin(); it != merged->end(); ++it) {
+                add_reference_count(it->second);
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+}
+
+
+
+
+template<class T, class X>
+T* intersectStdMaps(const T* vec, const T* otherVec) {
+    T *intersect = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0 || otherVecSize == 0) {
+        return intersect;
+    }
+
+    unordered_map<X, int> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        intersect->reserve(vecSize);
+    } else {
+        intersect->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[it->second] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (mp.count(it->second)) {
+            intersect->insert(*it);
+        }
+    }
+
+    return intersect;
+}
+
+template<class T>
+T* intersectZvalStdMaps(const T* vec, const T* otherVec, int type) {
+    T *intersect = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0 || otherVecSize == 0) {
+        return intersect;
+    }
+
+    CompareZvalValue::type = type;
+    unordered_map<zval*, int, std::hash<zval*>, CompareZvalValue> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        intersect->reserve(vecSize);
+    } else {
+        intersect->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[it->second] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (mp.count(it->second)) {
+            intersect->insert(*it);
+        }
+    }
+
+    return intersect;
+}
+
+PHP_METHOD(StdMap, intersect) {
+    zval *other;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+    zval *object = getThis();
+
+    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+
+    if (thisObj->type != otherObj->type) {
+        zend_throw_exception(NULL, "Could not intersect elements in to another type of map.", 0 TSRMLS_CC);
+        return;
+    }
+
+    object_init_ex(return_value, map_entry);
+    map_object* resultObject = (map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    resultObject->type = thisObj->type;
+    resultObject->objCe = thisObj->objCe;
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+
+            resultObject->vo = intersectStdMaps<IntStdMap, long>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+
+            resultObject->vo = intersectStdMaps<FloatStdMap, double>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+
+            resultObject->vo = intersectStdMaps<StringStdMap, string>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+
+            resultObject->vo = intersectStdMaps<BoolStdMap, bool>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+
+            ZvalStdMap *intersect = (ZvalStdMap*) intersectZvalStdMaps<ZvalStdMap>(vec, otherVec, thisObj->type);
+            resultObject->vo = intersect;
+
+            for (auto it = intersect->begin(); it != intersect->end(); ++it) {
+                add_reference_count(it->second);
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
+}
+
+
+
+
+
+
+template<class T, class X>
+T* diffStdMaps(const T* vec, const T* otherVec) {
+    T *diff = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0) {
+        return diff;
+    } else if (otherVecSize == 0) {
+        diff->reserve(vecSize);
+        diff->insert(vec->begin(), vec->end());
+        return diff;
+    }
+
+    unordered_map<X, int> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        diff->reserve(vecSize);
+    } else {
+        diff->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[it->second] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (!mp.count(it->second)) {
+            diff->insert(*it);
+        }
+    }
+
+    return diff;
+}
+
+template<class T>
+T* diffZvalStdMaps(const T* vec, const T* otherVec, int type) {
+    T *diff = new T();
+
+    uLongInt vecSize = vec->size();
+    uLongInt otherVecSize = otherVec->size();
+
+    if (vecSize == 0) {
+        return diff;
+    } else if (otherVecSize == 0) {
+        diff->reserve(vecSize);
+        diff->insert(vec->begin(), vec->end());
+        return diff;
+    }
+
+    CompareZvalValue::type = type;
+    unordered_map<zval*, int, std::hash<zval*>, CompareZvalValue> mp;
+
+    mp.reserve(vecSize);
+
+    if (vecSize < otherVecSize) {
+        diff->reserve(vecSize);
+    } else {
+        diff->reserve(otherVecSize);
+    }
+
+    for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
+        mp[it->second] = 1;
+    }
+
+    for (auto it = vec->begin(); it != vec->end(); ++it) {
+        if (!mp.count(it->second)) {
+            diff->insert(*it);
+        }
+    }
+
+    return diff;
+}
+
+PHP_METHOD(StdMap, diff) {
+    zval *other;
+
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+        zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
+        return;
+    }
+
+    zval *object = getThis();
+
+    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+
+    if (thisObj->type != otherObj->type) {
+        zend_throw_exception(NULL, "Could not diff elements in to another type of map.", 0 TSRMLS_CC);
+        return;
+    }
+
+    object_init_ex(return_value, map_entry);
+    map_object* resultObject = (map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    resultObject->type = thisObj->type;
+    resultObject->objCe = thisObj->objCe;
+
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+
+            resultObject->vo = diffStdMaps<IntStdMap, long>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+
+            resultObject->vo = diffStdMaps<FloatStdMap, double>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+
+            resultObject->vo = diffStdMaps<StringStdMap, string>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+
+            resultObject->vo = diffStdMaps<BoolStdMap, bool>(vec, otherVec);
+        }
+        break;
+
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+
+            ZvalStdMap *diff = (ZvalStdMap*) diffZvalStdMaps<ZvalStdMap>(vec, otherVec, thisObj->type);
+            resultObject->vo = diff;
+
+            for (auto it = diff->begin(); it != diff->end(); ++it) {
+                add_reference_count(it->second);
+            }
+        }
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
+    }
 }

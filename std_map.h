@@ -16,6 +16,15 @@ extern PHP_METHOD(StdMap, values);
 // iterator
 extern PHP_METHOD(StdMap, applyEach);
 
+// Take other StdMap as input append to elements into this
+extern PHP_METHOD(StdMap, append);
+
+// Take other StdMap as input and return StdMap
+extern PHP_METHOD(StdMap, merge);
+extern PHP_METHOD(StdMap, intersect);
+extern PHP_METHOD(StdMap, diff);
+
+
 static zend_function_entry map_class_methods[] = {
     PHP_ME(StdMap, size, NULL, ZEND_ACC_PUBLIC)
     PHP_ME(StdMap, reserve, arginfo_vector_reserve, ZEND_ACC_PUBLIC)
@@ -35,6 +44,11 @@ static zend_function_entry map_class_methods[] = {
     PHP_MALIAS(StdMap, replace, push, arginfo_vector_add, ZEND_ACC_PUBLIC)
 
     PHP_ME(StdMap, applyEach, NULL, ZEND_ACC_PUBLIC)
+
+    PHP_ME(StdMap, append, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, merge, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, intersect, NULL, ZEND_ACC_PUBLIC)
+    PHP_ME(StdMap, diff, NULL, ZEND_ACC_PUBLIC)
 
 	PHP_FE_END
 };
