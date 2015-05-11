@@ -53,6 +53,7 @@ extern "C" {
 #include "ext/standard/info.h"
 }
 
+#include "memory.hpp"
 #include "php_collections.h"
 
 
