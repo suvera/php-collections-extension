@@ -318,6 +318,21 @@ public:
         return ret;
     }
 
+    int __call(zval* obj1, const char* key) const {
+        zval **args[2], *obj2, *retval_ptr = NULL;
+
+        MAKE_STD_ZVAL(obj2);
+        ZVAL_STRING(obj2, key, 1);
+
+        args[0] = &obj1;
+        args[1] = &obj2;
+
+        int ret = this->__callInternal(args, retval_ptr);
+
+        zval_ptr_dtor(&obj2);
+        return ret;
+    }
+
     int operator()(zval* obj1) const {
         return this->__call(obj1);
     }
@@ -418,6 +433,58 @@ public:
     }
 
     int operator()(ZvalStdPair& p) const {
+        return this->__call(p.second, p.first);
+    }
+
+    int operator()(IntStdSuperPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_LONG(obj1, p.second);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(FloatStdSuperPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_DOUBLE(obj1, p.second);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(StringStdSuperPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_STRING(obj1, p.second.c_str(), 1);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(BoolStdSuperPair& p) const {
+        zval* obj1;
+        MAKE_STD_ZVAL(obj1);
+        ZVAL_BOOL(obj1, p.second);
+
+        int ret = this->__call(obj1, p.first);
+
+        zval_ptr_dtor(&obj1);
+
+        return ret;
+    }
+
+    int operator()(ZvalStdSuperPair& p) const {
         return this->__call(p.second, p.first);
     }
 };

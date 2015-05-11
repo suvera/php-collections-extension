@@ -71,6 +71,12 @@ typedef std::pair<const string, string> StringStdPair;
 typedef std::pair<const string, bool> BoolStdPair;
 typedef std::pair<const string, zval*> ZvalStdPair;
 
+typedef std::pair<const char* const, long> IntStdSuperPair;
+typedef std::pair<const char* const, double> FloatStdSuperPair;
+typedef std::pair<const char* const, string> StringStdSuperPair;
+typedef std::pair<const char* const, bool> BoolStdSuperPair;
+typedef std::pair<const char* const, zval*> ZvalStdSuperPair;
+
 typedef struct _vector_object {
     zend_object std;
     int type;

@@ -6,18 +6,77 @@ zend_class_entry *super_map_entry;
 
 #define SUPER_MAP_CLASS_NAME "StdSuperMap"
 
-#define SUPER_MAP_EMPTY_KEY "<* _`[(^%#@&eMpTy&@# %^)]`_*>"
+#define SUPER_MAP_EMPTY_KEY NULL
+//"<* _`[(^%#@&eMpTy&@# %^)]`_*>"
 #define SUPER_MAP_DELETED_KEY "<* _`[(^%#@&DeLeTED&@# %^)]`_*>"
 
 #include <google/dense_hash_map>
 using std::tr1::hash;
 using google::dense_hash_map;
 
-typedef dense_hash_map<string, long> IntStdSuperMap;
-typedef dense_hash_map<string, double> FloatStdSuperMap;
-typedef dense_hash_map<string, bool> BoolStdSuperMap;
-typedef dense_hash_map<string, string> StringStdSuperMap;
-typedef dense_hash_map<string, zval*> ZvalStdSuperMap;
+
+// ######################################################################################################################
+struct CharPtrEquality {
+    bool operator()(const char* s1, const char* s2) const {
+        if (s1 && s2)
+            return strcmp(s1, s2) == 0;
+        else if (s1 == NULL && s2 == NULL)
+            return true;
+
+        return false;
+    }
+};
+
+struct CompareCharPtrValue {
+    const char *value;
+    void*** tsrmls_dc;
+
+    bool operator()(const char* s2) const {
+        if (value && s2)
+            return strcmp(value, s2) == 0;
+        else
+            return value == NULL && s2 == NULL;
+    }
+
+    CompareCharPtrValue(const char *val, void*** tsrmls_dc_) {
+        value = val;
+        tsrmls_dc = tsrmls_dc_;
+    }
+};
+
+bool compareCharPtr(const char* s1, const char* s2) {
+    if (s1 && s2)
+        return strcmp(s1, s2) == 0;
+    else if (s1 == NULL && s2 == NULL)
+        return true;
+    else if (s1 == NULL)
+        return true;
+    else
+        return false;
+}
+
+#define HASH_SEED 5381
+
+// replace in-place of   hash<const char*>  below
+struct customHash {
+    unsigned long operator()(const char* str) const {
+        unsigned long hash = HASH_SEED;
+        int c;
+
+        while (c = *str++)
+            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+        return hash;
+    }
+};
+// ######################################################################################################################
+
+
+typedef dense_hash_map<const char*, long, customHash, CharPtrEquality> IntStdSuperMap;
+typedef dense_hash_map<const char*, double, customHash, CharPtrEquality> FloatStdSuperMap;
+typedef dense_hash_map<const char*, bool, customHash, CharPtrEquality> BoolStdSuperMap;
+typedef dense_hash_map<const char*, string, customHash, CharPtrEquality> StringStdSuperMap;
+typedef dense_hash_map<const char*, zval*, customHash, CharPtrEquality> ZvalStdSuperMap;
 
 typedef map_object super_map_object;
 

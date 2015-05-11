@@ -212,7 +212,7 @@ PHP_METHOD(StdSuperMap, at) {
     zval *object = getThis();
     super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long position = 0;
-    char *key;
+    const char *key;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &key, &position) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
@@ -226,6 +226,7 @@ PHP_METHOD(StdSuperMap, at) {
             if (vec->count(key)) {
                 long val = (*vec)[key];
                 RETURN_LONG(val);
+                return;
             }
         }
         break;
@@ -236,6 +237,7 @@ PHP_METHOD(StdSuperMap, at) {
             if (vec->count(key)) {
                 double val = (*vec)[key];
                 RETURN_DOUBLE(val);
+                return;
             }
         }
         break;
@@ -246,6 +248,7 @@ PHP_METHOD(StdSuperMap, at) {
             if (vec->count(key)) {
                 string val = (*vec)[key];
                 RETURN_STRING((char *) val.c_str(), 1);
+                return;
             }
         }
         break;
@@ -256,6 +259,7 @@ PHP_METHOD(StdSuperMap, at) {
             if (vec->count(key)) {
                 bool val = (*vec)[key];
                 RETURN_BOOL(val);
+                return;
             }
         }
         break;
@@ -268,6 +272,7 @@ PHP_METHOD(StdSuperMap, at) {
             if (vec->count(key)) {
                 zval *val = (*vec)[key];
                 RETVAL_ZVAL(val, 1, 0);
+                return;
             }
         }
         break;
@@ -305,6 +310,7 @@ PHP_METHOD(StdSuperMap, hasKey) {
         {
             keyExists = ((IntStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
+            return;
         }
         break;
 
@@ -312,6 +318,7 @@ PHP_METHOD(StdSuperMap, hasKey) {
         {
             keyExists = ((FloatStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
+            return;
         }
         break;
 
@@ -319,6 +326,7 @@ PHP_METHOD(StdSuperMap, hasKey) {
         {
             keyExists = ((StringStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
+            return;
         }
         break;
 
@@ -326,6 +334,7 @@ PHP_METHOD(StdSuperMap, hasKey) {
         {
             keyExists = ((BoolStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
+            return;
         }
         break;
 
@@ -335,6 +344,7 @@ PHP_METHOD(StdSuperMap, hasKey) {
         {
             keyExists = ((ZvalStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
+            return;
         }
         break;
 
@@ -367,8 +377,10 @@ PHP_METHOD(StdSuperMap, push) {
                 return;
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
         }
         break;
 
@@ -380,8 +392,10 @@ PHP_METHOD(StdSuperMap, push) {
                 return;
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
         }
         break;
 
@@ -395,8 +409,10 @@ PHP_METHOD(StdSuperMap, push) {
                 return;
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
         }
         break;
 
@@ -408,8 +424,10 @@ PHP_METHOD(StdSuperMap, push) {
                 return;
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
         }
         break;
 
@@ -421,11 +439,13 @@ PHP_METHOD(StdSuperMap, push) {
                 return;
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
-            if (vec->count(key)) {
-                delete_reference_count((*vec)[key]);
+            if (vec->count(KeyCpy)) {
+                delete_reference_count((*vec)[KeyCpy]);
             }
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
 
             add_reference_count(val);
         }
@@ -448,16 +468,18 @@ PHP_METHOD(StdSuperMap, push) {
                 }
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
-            if (vec->count(key)) {
-                delete_reference_count((*vec)[key]);
+            if (vec->count(KeyCpy)) {
+                delete_reference_count((*vec)[KeyCpy]);
             }
 
             if (thisObj->objCe == NULL && val != NULL) {
                 thisObj->objCe = Z_OBJCE_P(val);
             }
 
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
             add_reference_count(val);
         }
         break;
@@ -471,11 +493,13 @@ PHP_METHOD(StdSuperMap, push) {
                 return;
             }
 
+            char *KeyCpy = estrndup(key, keyLength);
+
             ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
-            if (vec->count(key)) {
-                delete_reference_count((*vec)[key]);
+            if (vec->count(KeyCpy)) {
+                delete_reference_count((*vec)[KeyCpy]);
             }
-            (*vec)[key] = val;
+            (*vec)[KeyCpy] = val;
 
             add_reference_count(val);
         }
@@ -676,7 +700,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
 
             for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second == val) {
-                    key = (char *) it->first.c_str();
+                    key = (char *) it->first;
                     found = 1;
                     break;
                 }
@@ -696,7 +720,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
             for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second == val) {
                     found = 1;
-                    key = (char *) it->first.c_str();
+                    key = (char *) it->first;
                     break;
                 }
             }
@@ -717,7 +741,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
             for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second.compare(val) == 0) {
                     found = 1;
-                    key = (char *) it->first.c_str();
+                    key = (char *) it->first;
                     break;
                 }
             }
@@ -736,7 +760,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
             for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second == val) {
                     found = 1;
-                    key = (char *) it->first.c_str();
+                    key = (char *) it->first;
                     break;
                 }
             }
@@ -755,7 +779,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
             for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (Z_LVAL_P(it->second) == Z_LVAL_P(val)) {
                     found = 1;
-                    key = (char *) it->first.c_str();
+                    key = (char *) it->first;
                     break;
                 }
             }
@@ -776,7 +800,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 for (auto it = vec->begin(); it != vec->end(); ++it) {
                     if (Z_OBJ_HT_P(it->second) == Z_OBJ_HT_P(val) && (Z_OBJ_HANDLE_P(it->second) == Z_OBJ_HANDLE_P(val))) {
                         found = 1;
-                        key = (char *) it->first.c_str();
+                        key = (char *) it->first;
                         break;
                     }
                 }
@@ -784,7 +808,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 for (auto it = vec->begin(); it != vec->end(); ++it) {
                     if (it->second == NULL) {
                         found = 1;
-                        key = (char *) it->first.c_str();
+                        key = (char *) it->first;
                         break;
                     }
                 }
@@ -807,7 +831,7 @@ static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 if ((Z_ARRVAL_P(it->second) == Z_ARRVAL_P(val)) ||
                     zend_hash_compare(Z_ARRVAL_P(it->second), Z_ARRVAL_P(val), (compare_func_t) hash_zval_identical_function, 1 TSRMLS_CC)==0) {
                     found = 1;
-                    key = (char *) it->first.c_str();
+                    key = (char *) it->first;
                     break;
                 }
             }
@@ -1635,7 +1659,7 @@ static int super_mapToArray(super_map_object *thisObj, zval *arr TSRMLS_DC) {
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
-                add_assoc_long(arr, it->first.c_str(), it->second);
+                add_assoc_long(arr, it->first, it->second);
             }
         }
         break;
@@ -1646,7 +1670,7 @@ static int super_mapToArray(super_map_object *thisObj, zval *arr TSRMLS_DC) {
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
-                add_assoc_double(arr, it->first.c_str(), it->second);
+                add_assoc_double(arr, it->first, it->second);
             }
         }
         break;
@@ -1657,7 +1681,7 @@ static int super_mapToArray(super_map_object *thisObj, zval *arr TSRMLS_DC) {
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
-                add_assoc_stringl(arr, it->first.c_str(), (char *) it->second.c_str(), it->second.length(), 1);
+                add_assoc_stringl(arr, it->first, (char *) it->second.c_str(), it->second.length(), 1);
             }
         }
         break;
@@ -1668,7 +1692,7 @@ static int super_mapToArray(super_map_object *thisObj, zval *arr TSRMLS_DC) {
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
-                add_assoc_bool(arr, it->first.c_str(), it->second);
+                add_assoc_bool(arr, it->first, it->second);
             }
         }
         break;
@@ -1681,7 +1705,7 @@ static int super_mapToArray(super_map_object *thisObj, zval *arr TSRMLS_DC) {
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
-                add_assoc_zval(arr, it->first.c_str(), it->second);
+                add_assoc_zval(arr, it->first, it->second);
                 add_reference_count(it->second);
             }
         }
