@@ -428,6 +428,7 @@ public:
 #include "std_vector.h"
 #include "std_map.h"
 #include "std_set.h"
+#include "std_super_map.h"
 
 
 
@@ -496,6 +497,16 @@ PHP_MINIT_FUNCTION(collections)
     zend_class_implements(set_entry TSRMLS_CC, 1, zend_ce_serializable);
 
 
+#if defined(HAVE_GOOGLE_LOCAL) || defined(HAVE_GOOGLE_LOCAL)
+    /* Register SUPER_MAP_CLASS_NAME Class */
+    memcpy(&super_map_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
+    super_map_handlers.clone_obj = NULL;
+    INIT_CLASS_ENTRY(ce, SUPER_MAP_CLASS_NAME, super_map_class_methods);
+    super_map_entry = zend_register_internal_class(&ce TSRMLS_CC);
+    super_map_entry->create_object = super_map_object_new;
+    zend_class_implements(super_map_entry TSRMLS_CC, 1, zend_ce_serializable);
+#endif
+
     // Register PHP Constants
     REGISTER_LONG_CONSTANT("TYPE_SCALAR_INT", TYPE_SCALAR_INT, CONST_CS | CONST_PERSISTENT);
     REGISTER_LONG_CONSTANT("TYPE_SCALAR_FLOAT", TYPE_SCALAR_FLOAT, CONST_CS | CONST_PERSISTENT);
@@ -542,3 +553,4 @@ PHP_MINFO_FUNCTION(collections)
 #include "std_vector.cpp"
 #include "std_map.cpp"
 #include "std_set.cpp"
+#include "std_super_map.cpp"

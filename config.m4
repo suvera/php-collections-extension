@@ -10,6 +10,8 @@ if test "$PHP_COLLECTIONS" != "no"; then
 
   AC_CHECK_HEADER(tr1/unordered_map, [AC_DEFINE([HAVE_TR1], [], ["Have tr1"])], [])
   AC_CHECK_HEADER(unordered_map, [AC_DEFINE([HAVE_CXX0X], [], ["Have C++0x"])], [])
+  AC_CHECK_HEADER(google/dense_hash_map, [AC_DEFINE([HAVE_GOOGLE], [], ["Google Dense Hash Map"])], [])
+  AC_CHECK_FILE(./include/google/dense_hash_map, [AC_DEFINE([HAVE_GOOGLE_LOCAL], [], ["Google Dense Hash Map"])], [])
 
   PHP_SUBST(IPV6_CPP_SHARED_LIBADD)
   PHP_ADD_LIBRARY(stdc++, 1, IPV6_CPP_SHARED_LIBADD)

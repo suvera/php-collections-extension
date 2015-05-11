@@ -1,7 +1,9 @@
+#if defined(HAVE_GOOGLE_LOCAL) || defined(HAVE_GOOGLE_LOCAL)
+
 /**
- *  StdMap class implementation
+ *  StdSuperMap class implementation
  */
-PHP_METHOD(StdMap, __construct) {
+PHP_METHOD(StdSuperMap, __construct) {
     long type = 0, capacity = 0;
     zval *object = getThis();
 
@@ -13,7 +15,7 @@ PHP_METHOD(StdMap, __construct) {
     if (capacity == 0)
         capacity = DEFAULT_CAPACITY;
 
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
     thisObj->type = type;
 
@@ -21,29 +23,37 @@ PHP_METHOD(StdMap, __construct) {
         switch (type) {
             case TYPE_SCALAR_INT:
             {
-                thisObj->vo = new IntStdMap();
-                ((IntStdMap*) thisObj->vo)->reserve(capacity);
+                thisObj->vo = new IntStdSuperMap();
+                ((IntStdSuperMap*) thisObj->vo)->set_empty_key(SUPER_MAP_EMPTY_KEY);
+                ((IntStdSuperMap*) thisObj->vo)->set_deleted_key(SUPER_MAP_DELETED_KEY);
+                ((IntStdSuperMap*) thisObj->vo)->resize(capacity);
             }
             break;
 
             case TYPE_SCALAR_FLOAT:
             {
-                thisObj->vo = new FloatStdMap();
-                ((FloatStdMap*) thisObj->vo)->reserve(capacity);
+                thisObj->vo = new FloatStdSuperMap();
+                ((FloatStdSuperMap*) thisObj->vo)->set_empty_key(SUPER_MAP_EMPTY_KEY);
+                ((FloatStdSuperMap*) thisObj->vo)->set_deleted_key(SUPER_MAP_DELETED_KEY);
+                ((FloatStdSuperMap*) thisObj->vo)->resize(capacity);
             }
             break;
 
             case TYPE_SCALAR_STRING:
             {
-                thisObj->vo = new StringStdMap();
-                ((StringStdMap*) thisObj->vo)->reserve(capacity);
+                thisObj->vo = new StringStdSuperMap();
+                ((StringStdSuperMap*) thisObj->vo)->set_empty_key(SUPER_MAP_EMPTY_KEY);
+                ((StringStdSuperMap*) thisObj->vo)->set_deleted_key(SUPER_MAP_DELETED_KEY);
+                ((StringStdSuperMap*) thisObj->vo)->resize(capacity);
             }
             break;
 
             case TYPE_SCALAR_BOOL:
             {
-                thisObj->vo = new BoolStdMap();
-                ((BoolStdMap*) thisObj->vo)->reserve(capacity);
+                thisObj->vo = new BoolStdSuperMap();
+                ((BoolStdSuperMap*) thisObj->vo)->set_empty_key(SUPER_MAP_EMPTY_KEY);
+                ((BoolStdSuperMap*) thisObj->vo)->set_deleted_key(SUPER_MAP_DELETED_KEY);
+                ((BoolStdSuperMap*) thisObj->vo)->resize(capacity);
             }
             break;
 
@@ -51,8 +61,10 @@ PHP_METHOD(StdMap, __construct) {
             case TYPE_COMPLEX_OBJECT:
             case TYPE_COMPLEX_ARRAY:
             {
-                thisObj->vo = new ZvalStdMap();
-                ((ZvalStdMap*) thisObj->vo)->reserve(capacity);
+                thisObj->vo = new ZvalStdSuperMap();
+                ((ZvalStdSuperMap*) thisObj->vo)->set_empty_key(SUPER_MAP_EMPTY_KEY);
+                ((ZvalStdSuperMap*) thisObj->vo)->set_deleted_key(SUPER_MAP_DELETED_KEY);
+                ((ZvalStdSuperMap*) thisObj->vo)->resize(capacity);
             }
             break;
 
@@ -71,40 +83,40 @@ PHP_METHOD(StdMap, __construct) {
         zend_throw_exception(NULL, (char*) ex.what(), 0 TSRMLS_CC);
         return;
     } catch (...) {
-        zend_throw_exception(NULL, "Unknown error in StdMap::__construct", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Unknown error in StdSuperMap::__construct", 0 TSRMLS_CC);
         return;
     }
 }
 
 
-PHP_METHOD(StdMap, size)
+PHP_METHOD(StdSuperMap, size)
 {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long count = 0;
 
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            count = ((IntStdMap*) thisObj->vo)->size();
+            count = ((IntStdSuperMap*) thisObj->vo)->size();
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            count = ((FloatStdMap*) thisObj->vo)->size();
+            count = ((FloatStdSuperMap*) thisObj->vo)->size();
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            count = ((StringStdMap*) thisObj->vo)->size();
+            count = ((StringStdSuperMap*) thisObj->vo)->size();
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            count = ((BoolStdMap*) thisObj->vo)->size();
+            count = ((BoolStdSuperMap*) thisObj->vo)->size();
         }
         break;
 
@@ -112,7 +124,7 @@ PHP_METHOD(StdMap, size)
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            count = ((ZvalStdMap*) thisObj->vo)->size();
+            count = ((ZvalStdSuperMap*) thisObj->vo)->size();
         }
         break;
 
@@ -131,9 +143,9 @@ PHP_METHOD(StdMap, size)
 
 
 
-PHP_METHOD(StdMap, reserve) {
+PHP_METHOD(StdSuperMap, reserve) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long newCapacity = 0;
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &newCapacity) == FAILURE) {
@@ -145,25 +157,25 @@ PHP_METHOD(StdMap, reserve) {
         switch (thisObj->type) {
             case TYPE_SCALAR_INT:
             {
-                ((IntStdMap*) thisObj->vo)->reserve(newCapacity);
+                ((IntStdSuperMap*) thisObj->vo)->resize(newCapacity);
             }
             break;
 
             case TYPE_SCALAR_FLOAT:
             {
-                ((FloatStdMap*) thisObj->vo)->reserve(newCapacity);
+                ((FloatStdSuperMap*) thisObj->vo)->resize(newCapacity);
             }
             break;
 
             case TYPE_SCALAR_STRING:
             {
-                ((StringStdMap*) thisObj->vo)->reserve(newCapacity);
+                ((StringStdSuperMap*) thisObj->vo)->resize(newCapacity);
             }
             break;
 
             case TYPE_SCALAR_BOOL:
             {
-                ((BoolStdMap*) thisObj->vo)->reserve(newCapacity);
+                ((BoolStdSuperMap*) thisObj->vo)->resize(newCapacity);
             }
             break;
 
@@ -171,7 +183,7 @@ PHP_METHOD(StdMap, reserve) {
             case TYPE_COMPLEX_OBJECT:
             case TYPE_COMPLEX_ARRAY:
             {
-                ((ZvalStdMap*) thisObj->vo)->reserve(newCapacity);
+                ((ZvalStdSuperMap*) thisObj->vo)->resize(newCapacity);
             }
             break;
 
@@ -188,7 +200,7 @@ PHP_METHOD(StdMap, reserve) {
         zend_throw_exception(NULL, (char*) ex.what(), 0 TSRMLS_CC);
         return;
     } catch (...) {
-        zend_throw_exception(NULL, "Unknown error in StdMap::reserve", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Unknown error in StdSuperMap::reserve", 0 TSRMLS_CC);
         return;
     }
 }
@@ -196,9 +208,9 @@ PHP_METHOD(StdMap, reserve) {
 
 
 
-PHP_METHOD(StdMap, at) {
+PHP_METHOD(StdSuperMap, at) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long position = 0;
     char *key;
 
@@ -207,71 +219,77 @@ PHP_METHOD(StdMap, at) {
         return;
     }
 
-    try {
-        switch (thisObj->type) {
-            case TYPE_SCALAR_INT:
-            {
-                long val = ((IntStdMap*) thisObj->vo)->at(key);
+    switch (thisObj->type) {
+        case TYPE_SCALAR_INT:
+        {
+            IntStdSuperMap *vec = ((IntStdSuperMap*) thisObj->vo);
+            if (vec->count(key)) {
+                long val = (*vec)[key];
                 RETURN_LONG(val);
             }
-            break;
+        }
+        break;
 
-            case TYPE_SCALAR_FLOAT:
-            {
-                double val = ((FloatStdMap*) thisObj->vo)->at(key);
+        case TYPE_SCALAR_FLOAT:
+        {
+            FloatStdSuperMap *vec = ((FloatStdSuperMap*) thisObj->vo);
+            if (vec->count(key)) {
+                double val = (*vec)[key];
                 RETURN_DOUBLE(val);
             }
-            break;
+        }
+        break;
 
-            case TYPE_SCALAR_STRING:
-            {
-                string val = ((StringStdMap*) thisObj->vo)->at(key);
+        case TYPE_SCALAR_STRING:
+        {
+            StringStdSuperMap *vec = ((StringStdSuperMap*) thisObj->vo);
+            if (vec->count(key)) {
+                string val = (*vec)[key];
                 RETURN_STRING((char *) val.c_str(), 1);
             }
-            break;
+        }
+        break;
 
-            case TYPE_SCALAR_BOOL:
-            {
-                bool val = ((BoolStdMap*) thisObj->vo)->at(key);
+        case TYPE_SCALAR_BOOL:
+        {
+            BoolStdSuperMap *vec = ((BoolStdSuperMap*) thisObj->vo);
+            if (vec->count(key)) {
+                bool val = (*vec)[key];
                 RETURN_BOOL(val);
             }
-            break;
+        }
+        break;
 
-            case TYPE_COMPLEX_RESOURCE:
-            case TYPE_COMPLEX_OBJECT:
-            case TYPE_COMPLEX_ARRAY:
-            {
-                zval *val = (zval *) ((ZvalStdMap*) thisObj->vo)->at(key);
-
+        case TYPE_COMPLEX_RESOURCE:
+        case TYPE_COMPLEX_OBJECT:
+        case TYPE_COMPLEX_ARRAY:
+        {
+            ZvalStdSuperMap *vec = ((ZvalStdSuperMap*) thisObj->vo);
+            if (vec->count(key)) {
+                zval *val = (*vec)[key];
                 RETVAL_ZVAL(val, 1, 0);
             }
-            break;
-
-            default:
-            {
-                throw string("Invalid data type");
-            }
-            break;
         }
-    } catch (const std::string& ex) {
-        zend_throw_exception(NULL, (char*) ex.c_str(), 0 TSRMLS_CC);
-        return;
-    } catch (const std::exception& ex) {
-        zend_throw_exception(NULL, (char*) ex.what(), 0 TSRMLS_CC);
-        return;
-    } catch (...) {
-        zend_throw_exception(NULL, "Unknown error in StdMap::at", 0 TSRMLS_CC);
-        return;
+        break;
+
+        default:
+        {
+            zend_throw_exception(NULL, "Invalid data type", 0 TSRMLS_CC);
+            return;
+        }
+        break;
     }
+
+    zend_throw_exception(NULL, "Specified key could not found in the map", 0 TSRMLS_CC);
 }
 
 
 
 
 
-PHP_METHOD(StdMap, hasKey) {
+PHP_METHOD(StdSuperMap, hasKey) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long position = 0;
     char *key;
 
@@ -285,28 +303,28 @@ PHP_METHOD(StdMap, hasKey) {
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            keyExists = ((IntStdMap*) thisObj->vo)->count(key);
+            keyExists = ((IntStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            keyExists = ((FloatStdMap*) thisObj->vo)->count(key);
+            keyExists = ((FloatStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            keyExists = ((StringStdMap*) thisObj->vo)->count(key);
+            keyExists = ((StringStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            keyExists = ((BoolStdMap*) thisObj->vo)->count(key);
+            keyExists = ((BoolStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
         }
         break;
@@ -315,7 +333,7 @@ PHP_METHOD(StdMap, hasKey) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            keyExists = ((ZvalStdMap*) thisObj->vo)->count(key);
+            keyExists = ((ZvalStdSuperMap*) thisObj->vo)->count(key);
             RETURN_BOOL(keyExists);
         }
         break;
@@ -334,9 +352,9 @@ PHP_METHOD(StdMap, hasKey) {
 
 
 
-PHP_METHOD(StdMap, push) {
+PHP_METHOD(StdSuperMap, push) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     char *key;
     long keyLength = 0;
 
@@ -349,7 +367,7 @@ PHP_METHOD(StdMap, push) {
                 return;
             }
 
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
             (*vec)[key] = val;
         }
         break;
@@ -362,7 +380,7 @@ PHP_METHOD(StdMap, push) {
                 return;
             }
 
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
             (*vec)[key] = val;
         }
         break;
@@ -377,7 +395,7 @@ PHP_METHOD(StdMap, push) {
                 return;
             }
 
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
             (*vec)[key] = val;
         }
         break;
@@ -390,7 +408,7 @@ PHP_METHOD(StdMap, push) {
                 return;
             }
 
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
             (*vec)[key] = val;
         }
         break;
@@ -403,9 +421,9 @@ PHP_METHOD(StdMap, push) {
                 return;
             }
 
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             if (vec->count(key)) {
-                delete_reference_count(vec->at(key));
+                delete_reference_count((*vec)[key]);
             }
             (*vec)[key] = val;
 
@@ -425,14 +443,14 @@ PHP_METHOD(StdMap, push) {
                 }
             } else {
                 if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "sO!", &key, &keyLength, &val, thisObj->objCe) == FAILURE) {
-                    zend_throw_exception(NULL, "Invalid input parameters to the method, Could not add other objects into this map.", 0 TSRMLS_CC);
+                    zend_throw_exception(NULL, "Invalid input parameters to the method, Could not add other objects into this super_map.", 0 TSRMLS_CC);
                     return;
                 }
             }
 
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             if (vec->count(key)) {
-                delete_reference_count(vec->at(key));
+                delete_reference_count((*vec)[key]);
             }
 
             if (thisObj->objCe == NULL && val != NULL) {
@@ -453,9 +471,9 @@ PHP_METHOD(StdMap, push) {
                 return;
             }
 
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             if (vec->count(key)) {
-                delete_reference_count(vec->at(key));
+                delete_reference_count((*vec)[key]);
             }
             (*vec)[key] = val;
 
@@ -479,11 +497,11 @@ PHP_METHOD(StdMap, push) {
 
 
 /**
- * Only Applicable to unordered_map<string, Object>
+ * Only Applicable to container<string, Object>
  */
-PHP_METHOD(StdMap, getClass) {
+PHP_METHOD(StdSuperMap, getClass) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
     if (thisObj->objCe == NULL) {
         RETURN_NULL();
@@ -496,9 +514,9 @@ PHP_METHOD(StdMap, getClass) {
 
 
 
-PHP_METHOD(StdMap, erase) {
+PHP_METHOD(StdSuperMap, erase) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long position = 0, length = 0;
     char *key;
     long erased = 0;
@@ -511,28 +529,28 @@ PHP_METHOD(StdMap, erase) {
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
             erased = vec->erase(key);
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
             erased = vec->erase(key);
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
             erased = vec->erase(key);
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
             erased = vec->erase(key);
         }
         break;
@@ -541,9 +559,9 @@ PHP_METHOD(StdMap, erase) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
 
-            zval *val = vec->at(key);
+            zval *val = (*vec)[key];
             delete_reference_count(val);
 
             erased = vec->erase(key);
@@ -564,36 +582,36 @@ PHP_METHOD(StdMap, erase) {
 
 
 
-PHP_METHOD(StdMap, clear) {
+PHP_METHOD(StdSuperMap, clear) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
     try {
         switch (thisObj->type) {
             case TYPE_SCALAR_INT:
             {
-                ((IntStdMap*) thisObj->vo)->clear();
+                ((IntStdSuperMap*) thisObj->vo)->clear();
 
             }
             break;
 
             case TYPE_SCALAR_FLOAT:
             {
-                ((FloatStdMap*) thisObj->vo)->clear();
+                ((FloatStdSuperMap*) thisObj->vo)->clear();
 
             }
             break;
 
             case TYPE_SCALAR_STRING:
             {
-                ((StringStdMap*) thisObj->vo)->clear();
+                ((StringStdSuperMap*) thisObj->vo)->clear();
 
             }
             break;
 
             case TYPE_SCALAR_BOOL:
             {
-                ((BoolStdMap*) thisObj->vo)->clear();
+                ((BoolStdSuperMap*) thisObj->vo)->clear();
 
             }
             break;
@@ -602,10 +620,10 @@ PHP_METHOD(StdMap, clear) {
             case TYPE_COMPLEX_OBJECT:
             case TYPE_COMPLEX_ARRAY:
             {
-                ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+                ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
 
                 //Z_DELREF_P(new_var);
-                for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+                for (auto it = vec->begin(); it != vec->end(); ++it ) {
                     delete_reference_count(it->second);
                 }
 
@@ -627,7 +645,7 @@ PHP_METHOD(StdMap, clear) {
         zend_throw_exception(NULL, (char*) ex.what(), 0 TSRMLS_CC);
         return;
     } catch (...) {
-        zend_throw_exception(NULL, "Unknown error in StdMap::clear", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Unknown error in StdSuperMap::clear", 0 TSRMLS_CC);
         return;
     }
 
@@ -638,9 +656,9 @@ PHP_METHOD(StdMap, clear) {
 
 
 
-static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
+static void findSuperValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     long pos = -1;
     char *key = NULL;
     zend_bool found = 0;
@@ -654,9 +672,9 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
 
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second == val) {
                     key = (char *) it->first.c_str();
                     found = 1;
@@ -674,8 +692,8 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second == val) {
                     found = 1;
                     key = (char *) it->first.c_str();
@@ -695,8 +713,8 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second.compare(val) == 0) {
                     found = 1;
                     key = (char *) it->first.c_str();
@@ -714,8 +732,8 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (it->second == val) {
                     found = 1;
                     key = (char *) it->first.c_str();
@@ -733,8 +751,8 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if (Z_LVAL_P(it->second) == Z_LVAL_P(val)) {
                     found = 1;
                     key = (char *) it->first.c_str();
@@ -753,9 +771,9 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             if (val != NULL) {
-                for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                for (auto it = vec->begin(); it != vec->end(); ++it) {
                     if (Z_OBJ_HT_P(it->second) == Z_OBJ_HT_P(val) && (Z_OBJ_HANDLE_P(it->second) == Z_OBJ_HANDLE_P(val))) {
                         found = 1;
                         key = (char *) it->first.c_str();
@@ -763,7 +781,7 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                     }
                 }
             } else {
-                for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+                for (auto it = vec->begin(); it != vec->end(); ++it) {
                     if (it->second == NULL) {
                         found = 1;
                         key = (char *) it->first.c_str();
@@ -783,9 +801,9 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
                 return;
             }
 
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
 
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it) {
+            for (auto it = vec->begin(); it != vec->end(); ++it) {
                 if ((Z_ARRVAL_P(it->second) == Z_ARRVAL_P(val)) ||
                     zend_hash_compare(Z_ARRVAL_P(it->second), Z_ARRVAL_P(val), (compare_func_t) hash_zval_identical_function, 1 TSRMLS_CC)==0) {
                     found = 1;
@@ -813,12 +831,12 @@ static void findValue(INTERNAL_FUNCTION_PARAMETERS, int retBool) {
 }
 
 // search for a Value
-PHP_METHOD(StdMap, search) {
-    findValue(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
+PHP_METHOD(StdSuperMap, search) {
+    findSuperValue(INTERNAL_FUNCTION_PARAM_PASSTHRU, 0);
 }
 
-PHP_METHOD(StdMap, hasValue) {
-    findValue(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
+PHP_METHOD(StdSuperMap, hasValue) {
+    findSuperValue(INTERNAL_FUNCTION_PARAM_PASSTHRU, 1);
 }
 
 
@@ -827,11 +845,11 @@ PHP_METHOD(StdMap, hasValue) {
 
 
 /**
- * return keys as StdVector
+ * return keys as StdSuperMap
  */
-PHP_METHOD(StdMap, keys) {
+PHP_METHOD(StdSuperMap, keys) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     vector_object *newObject;
 
     object_init_ex(return_value, vector_entry);
@@ -843,11 +861,11 @@ PHP_METHOD(StdMap, keys) {
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
             StringVector *v = new StringVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->first);
             }
 
@@ -857,11 +875,11 @@ PHP_METHOD(StdMap, keys) {
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
             StringVector *v = new StringVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->first);
             }
 
@@ -871,11 +889,11 @@ PHP_METHOD(StdMap, keys) {
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
             StringVector *v = new StringVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->first);
             }
 
@@ -885,11 +903,11 @@ PHP_METHOD(StdMap, keys) {
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
             StringVector *v = new StringVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->first);
             }
 
@@ -901,11 +919,11 @@ PHP_METHOD(StdMap, keys) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             StringVector *v = new StringVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->first);
             }
 
@@ -923,11 +941,11 @@ PHP_METHOD(StdMap, keys) {
 }
 
 /**
- * return values as StdMap
+ * return values as StdVector
  */
-PHP_METHOD(StdMap, values) {
+PHP_METHOD(StdSuperMap, values) {
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
     vector_object *newObject;
 
     object_init_ex(return_value, vector_entry);
@@ -939,11 +957,11 @@ PHP_METHOD(StdMap, values) {
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
             IntVector *v = new IntVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->second);
             }
 
@@ -953,11 +971,11 @@ PHP_METHOD(StdMap, values) {
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
             FloatVector *v = new FloatVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->second);
             }
 
@@ -967,11 +985,11 @@ PHP_METHOD(StdMap, values) {
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
             StringVector *v = new StringVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->second);
             }
 
@@ -981,11 +999,11 @@ PHP_METHOD(StdMap, values) {
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
             BoolVector *v = new BoolVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->second);
             }
 
@@ -997,11 +1015,11 @@ PHP_METHOD(StdMap, values) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             ZvalVector *v = new ZvalVector();
 
             v->reserve(vec->size());
-            for (auto it = vec->cbegin(); it != vec->cend(); ++it ) {
+            for (auto it = vec->begin(); it != vec->end(); ++it ) {
                 v->push_back(it->second);
                 add_reference_count(it->second);
             }
@@ -1023,8 +1041,8 @@ PHP_METHOD(StdMap, values) {
 
 
 
-// Apply function to all elements in this map
-PHP_METHOD(StdMap, applyEach) {
+// Apply function to all elements in this super_map
+PHP_METHOD(StdSuperMap, applyEach) {
     zend_fcall_info fci;
     zend_fcall_info_cache fci_cache;
 
@@ -1033,33 +1051,33 @@ PHP_METHOD(StdMap, applyEach) {
         return;
     }
     zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
             std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
             std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
             std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
             ApplyEachCaller clr(&fci, &fci_cache);
             for (auto it = vec->begin(); it != vec->end(); ++it) {
                 clr(*it);
@@ -1071,7 +1089,7 @@ PHP_METHOD(StdMap, applyEach) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
             std::for_each(vec->begin(), vec->end(), ApplyEachCaller(&fci, &fci_cache));
         }
         break;
@@ -1093,58 +1111,58 @@ PHP_METHOD(StdMap, applyEach) {
 
 
 
-// Take other StdMap as input append to elements into this
-PHP_METHOD(StdMap, append) {
+// Take other StdSuperMap as input append to elements into this
+PHP_METHOD(StdSuperMap, append) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, super_map_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
 
     zval *object = getThis();
 
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *otherObj = (super_map_object *) zend_object_store_get_object(other TSRMLS_CC);
 
     if (thisObj->type != otherObj->type) {
-        zend_throw_exception(NULL, "Could not append elements to another type of map.", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Could not append elements to another type of super_map.", 0 TSRMLS_CC);
         return;
     }
 
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
-            vec->reserve(vec->size() + otherVec->size());
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
+            IntStdSuperMap *otherVec = (IntStdSuperMap*) otherObj->vo;
+            vec->resize(vec->size() + otherVec->size());
             vec->insert(otherVec->begin(), vec->end());
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
-            vec->reserve(vec->size() + otherVec->size());
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
+            FloatStdSuperMap *otherVec = (FloatStdSuperMap*) otherObj->vo;
+            vec->resize(vec->size() + otherVec->size());
             vec->insert(otherVec->begin(), vec->end());
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
-            vec->reserve(vec->size() + otherVec->size());
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
+            StringStdSuperMap *otherVec = (StringStdSuperMap*) otherObj->vo;
+            vec->resize(vec->size() + otherVec->size());
             vec->insert(otherVec->begin(), vec->end());
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
-            vec->reserve(vec->size() + otherVec->size());
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
+            BoolStdSuperMap *otherVec = (BoolStdSuperMap*) otherObj->vo;
+            vec->resize(vec->size() + otherVec->size());
             vec->insert(otherVec->begin(), vec->end());
         }
         break;
@@ -1153,9 +1171,9 @@ PHP_METHOD(StdMap, append) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
-            vec->reserve(vec->size() + otherVec->size());
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
+            ZvalStdSuperMap *otherVec = (ZvalStdSuperMap*) otherObj->vo;
+            vec->resize(vec->size() + otherVec->size());
 
             for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
                 if (!vec->count(it->first)) {
@@ -1177,12 +1195,12 @@ PHP_METHOD(StdMap, append) {
     RETURN_TRUE;
 }
 
-// Take other StdMap as input and return StdMap
+// Take other StdSuperMap as input and return StdSuperMap
 template<class T>
-T* mergeStdMaps(const T* vec, const T* otherVec) {
+T* mergeStdSuperMaps(const T* vec, const T* otherVec) {
     T *merged = new T();
 
-    merged->reserve(vec->size() + otherVec->size());
+    merged->resize(vec->size() + otherVec->size());
 
     merged->insert(vec->begin(), vec->end());
     merged->insert(otherVec->begin(), otherVec->end());
@@ -1191,63 +1209,63 @@ T* mergeStdMaps(const T* vec, const T* otherVec) {
 }
 
 
-PHP_METHOD(StdMap, merge) {
+PHP_METHOD(StdSuperMap, merge) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, super_map_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
 
     zval *object = getThis();
 
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *otherObj = (super_map_object *) zend_object_store_get_object(other TSRMLS_CC);
 
     if (thisObj->type != otherObj->type) {
-        zend_throw_exception(NULL, "Could not merge elements in to another type of map.", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Could not merge elements in to another type of super_map.", 0 TSRMLS_CC);
         return;
     }
 
-    object_init_ex(return_value, map_entry);
-    map_object* resultObject = (map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    object_init_ex(return_value, super_map_entry);
+    super_map_object* resultObject = (super_map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
     resultObject->type = thisObj->type;
     resultObject->objCe = thisObj->objCe;
 
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
+            IntStdSuperMap *otherVec = (IntStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = mergeStdMaps<IntStdMap>(vec, otherVec);
+            resultObject->vo = mergeStdSuperMaps<IntStdSuperMap>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
+            FloatStdSuperMap *otherVec = (FloatStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = mergeStdMaps<FloatStdMap>(vec, otherVec);
+            resultObject->vo = mergeStdSuperMaps<FloatStdSuperMap>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
+            StringStdSuperMap *otherVec = (StringStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = mergeStdMaps<StringStdMap>(vec, otherVec);
+            resultObject->vo = mergeStdSuperMaps<StringStdSuperMap>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
+            BoolStdSuperMap *otherVec = (BoolStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = mergeStdMaps<BoolStdMap>(vec, otherVec);
+            resultObject->vo = mergeStdSuperMaps<BoolStdSuperMap>(vec, otherVec);
         }
         break;
 
@@ -1255,10 +1273,10 @@ PHP_METHOD(StdMap, merge) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
+            ZvalStdSuperMap *otherVec = (ZvalStdSuperMap*) otherObj->vo;
 
-            ZvalStdMap *merged = (ZvalStdMap*) mergeStdMaps<ZvalStdMap>(vec, otherVec);
+            ZvalStdSuperMap *merged = (ZvalStdSuperMap*) mergeStdSuperMaps<ZvalStdSuperMap>(vec, otherVec);
             resultObject->vo = merged;
 
             for (auto it = merged->begin(); it != merged->end(); ++it) {
@@ -1280,7 +1298,7 @@ PHP_METHOD(StdMap, merge) {
 
 
 template<class T, class X>
-T* intersectStdMaps(const T* vec, const T* otherVec) {
+T* intersectStdSuperMaps(const T* vec, const T* otherVec) {
     T *intersect = new T();
 
     uLongInt vecSize = vec->size();
@@ -1295,9 +1313,9 @@ T* intersectStdMaps(const T* vec, const T* otherVec) {
     mp.reserve(vecSize);
 
     if (vecSize < otherVecSize) {
-        intersect->reserve(vecSize);
+        intersect->resize(vecSize);
     } else {
-        intersect->reserve(otherVecSize);
+        intersect->resize(otherVecSize);
     }
 
     for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
@@ -1314,7 +1332,7 @@ T* intersectStdMaps(const T* vec, const T* otherVec) {
 }
 
 template<class T>
-T* intersectZvalStdMaps(const T* vec, const T* otherVec, int type) {
+T* intersectZvalStdSuperMaps(const T* vec, const T* otherVec, int type) {
     T *intersect = new T();
 
     uLongInt vecSize = vec->size();
@@ -1330,9 +1348,9 @@ T* intersectZvalStdMaps(const T* vec, const T* otherVec, int type) {
     mp.reserve(vecSize);
 
     if (vecSize < otherVecSize) {
-        intersect->reserve(vecSize);
+        intersect->resize(vecSize);
     } else {
-        intersect->reserve(otherVecSize);
+        intersect->resize(otherVecSize);
     }
 
     for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
@@ -1348,63 +1366,63 @@ T* intersectZvalStdMaps(const T* vec, const T* otherVec, int type) {
     return intersect;
 }
 
-PHP_METHOD(StdMap, intersect) {
+PHP_METHOD(StdSuperMap, intersect) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, super_map_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
 
     zval *object = getThis();
 
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *otherObj = (super_map_object *) zend_object_store_get_object(other TSRMLS_CC);
 
     if (thisObj->type != otherObj->type) {
-        zend_throw_exception(NULL, "Could not intersect elements in to another type of map.", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Could not intersect elements in to another type of super_map.", 0 TSRMLS_CC);
         return;
     }
 
-    object_init_ex(return_value, map_entry);
-    map_object* resultObject = (map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    object_init_ex(return_value, super_map_entry);
+    super_map_object* resultObject = (super_map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
     resultObject->type = thisObj->type;
     resultObject->objCe = thisObj->objCe;
 
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
+            IntStdSuperMap *otherVec = (IntStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = intersectStdMaps<IntStdMap, long>(vec, otherVec);
+            resultObject->vo = intersectStdSuperMaps<IntStdSuperMap, long>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
+            FloatStdSuperMap *otherVec = (FloatStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = intersectStdMaps<FloatStdMap, double>(vec, otherVec);
+            resultObject->vo = intersectStdSuperMaps<FloatStdSuperMap, double>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
+            StringStdSuperMap *otherVec = (StringStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = intersectStdMaps<StringStdMap, string>(vec, otherVec);
+            resultObject->vo = intersectStdSuperMaps<StringStdSuperMap, string>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
+            BoolStdSuperMap *otherVec = (BoolStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = intersectStdMaps<BoolStdMap, bool>(vec, otherVec);
+            resultObject->vo = intersectStdSuperMaps<BoolStdSuperMap, bool>(vec, otherVec);
         }
         break;
 
@@ -1412,10 +1430,10 @@ PHP_METHOD(StdMap, intersect) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
+            ZvalStdSuperMap *otherVec = (ZvalStdSuperMap*) otherObj->vo;
 
-            ZvalStdMap *intersect = (ZvalStdMap*) intersectZvalStdMaps<ZvalStdMap>(vec, otherVec, thisObj->type);
+            ZvalStdSuperMap *intersect = (ZvalStdSuperMap*) intersectZvalStdSuperMaps<ZvalStdSuperMap>(vec, otherVec, thisObj->type);
             resultObject->vo = intersect;
 
             for (auto it = intersect->begin(); it != intersect->end(); ++it) {
@@ -1439,7 +1457,7 @@ PHP_METHOD(StdMap, intersect) {
 
 
 template<class T, class X>
-T* diffStdMaps(const T* vec, const T* otherVec) {
+T* diffStdSuperMaps(const T* vec, const T* otherVec) {
     T *diff = new T();
 
     uLongInt vecSize = vec->size();
@@ -1448,7 +1466,7 @@ T* diffStdMaps(const T* vec, const T* otherVec) {
     if (vecSize == 0) {
         return diff;
     } else if (otherVecSize == 0) {
-        diff->reserve(vecSize);
+        diff->resize(vecSize);
         diff->insert(vec->begin(), vec->end());
         return diff;
     }
@@ -1458,9 +1476,9 @@ T* diffStdMaps(const T* vec, const T* otherVec) {
     mp.reserve(vecSize);
 
     if (vecSize < otherVecSize) {
-        diff->reserve(vecSize);
+        diff->resize(vecSize);
     } else {
-        diff->reserve(otherVecSize);
+        diff->resize(otherVecSize);
     }
 
     for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
@@ -1477,7 +1495,7 @@ T* diffStdMaps(const T* vec, const T* otherVec) {
 }
 
 template<class T>
-T* diffZvalStdMaps(const T* vec, const T* otherVec, int type) {
+T* diffZvalStdSuperMaps(const T* vec, const T* otherVec, int type) {
     T *diff = new T();
 
     uLongInt vecSize = vec->size();
@@ -1486,7 +1504,7 @@ T* diffZvalStdMaps(const T* vec, const T* otherVec, int type) {
     if (vecSize == 0) {
         return diff;
     } else if (otherVecSize == 0) {
-        diff->reserve(vecSize);
+        diff->resize(vecSize);
         diff->insert(vec->begin(), vec->end());
         return diff;
     }
@@ -1497,9 +1515,9 @@ T* diffZvalStdMaps(const T* vec, const T* otherVec, int type) {
     mp.reserve(vecSize);
 
     if (vecSize < otherVecSize) {
-        diff->reserve(vecSize);
+        diff->resize(vecSize);
     } else {
-        diff->reserve(otherVecSize);
+        diff->resize(otherVecSize);
     }
 
     for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
@@ -1515,63 +1533,63 @@ T* diffZvalStdMaps(const T* vec, const T* otherVec, int type) {
     return diff;
 }
 
-PHP_METHOD(StdMap, diff) {
+PHP_METHOD(StdSuperMap, diff) {
     zval *other;
 
-    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, map_entry) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &other, super_map_entry) == FAILURE) {
         zend_throw_exception(NULL, "Invalid input parameters to the method, please check the method signature.", 0 TSRMLS_CC);
         return;
     }
 
     zval *object = getThis();
 
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
-    map_object *otherObj = (map_object *) zend_object_store_get_object(other TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *otherObj = (super_map_object *) zend_object_store_get_object(other TSRMLS_CC);
 
     if (thisObj->type != otherObj->type) {
-        zend_throw_exception(NULL, "Could not diff elements in to another type of map.", 0 TSRMLS_CC);
+        zend_throw_exception(NULL, "Could not diff elements in to another type of super_map.", 0 TSRMLS_CC);
         return;
     }
 
-    object_init_ex(return_value, map_entry);
-    map_object* resultObject = (map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
+    object_init_ex(return_value, super_map_entry);
+    super_map_object* resultObject = (super_map_object *) zend_object_store_get_object(return_value TSRMLS_CC);
     resultObject->type = thisObj->type;
     resultObject->objCe = thisObj->objCe;
 
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
-            IntStdMap *otherVec = (IntStdMap*) otherObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
+            IntStdSuperMap *otherVec = (IntStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = diffStdMaps<IntStdMap, long>(vec, otherVec);
+            resultObject->vo = diffStdSuperMaps<IntStdSuperMap, long>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
-            FloatStdMap *otherVec = (FloatStdMap*) otherObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
+            FloatStdSuperMap *otherVec = (FloatStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = diffStdMaps<FloatStdMap, double>(vec, otherVec);
+            resultObject->vo = diffStdSuperMaps<FloatStdSuperMap, double>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
-            StringStdMap *otherVec = (StringStdMap*) otherObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
+            StringStdSuperMap *otherVec = (StringStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = diffStdMaps<StringStdMap, string>(vec, otherVec);
+            resultObject->vo = diffStdSuperMaps<StringStdSuperMap, string>(vec, otherVec);
         }
         break;
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
-            BoolStdMap *otherVec = (BoolStdMap*) otherObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
+            BoolStdSuperMap *otherVec = (BoolStdSuperMap*) otherObj->vo;
 
-            resultObject->vo = diffStdMaps<BoolStdMap, bool>(vec, otherVec);
+            resultObject->vo = diffStdSuperMaps<BoolStdSuperMap, bool>(vec, otherVec);
         }
         break;
 
@@ -1579,10 +1597,10 @@ PHP_METHOD(StdMap, diff) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
-            ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
+            ZvalStdSuperMap *otherVec = (ZvalStdSuperMap*) otherObj->vo;
 
-            ZvalStdMap *diff = (ZvalStdMap*) diffZvalStdMaps<ZvalStdMap>(vec, otherVec, thisObj->type);
+            ZvalStdSuperMap *diff = (ZvalStdSuperMap*) diffZvalStdSuperMaps<ZvalStdSuperMap>(vec, otherVec, thisObj->type);
             resultObject->vo = diff;
 
             for (auto it = diff->begin(); it != diff->end(); ++it) {
@@ -1609,11 +1627,11 @@ PHP_METHOD(StdMap, diff) {
  * To Array
  *
  */
-static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
+static int super_mapToArray(super_map_object *thisObj, zval *arr TSRMLS_DC) {
     switch (thisObj->type) {
         case TYPE_SCALAR_INT:
         {
-            IntStdMap *vec = (IntStdMap*) thisObj->vo;
+            IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
@@ -1624,7 +1642,7 @@ static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
 
         case TYPE_SCALAR_FLOAT:
         {
-            FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+            FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
@@ -1635,7 +1653,7 @@ static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
 
         case TYPE_SCALAR_STRING:
         {
-            StringStdMap *vec = (StringStdMap*) thisObj->vo;
+            StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
@@ -1646,7 +1664,7 @@ static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
 
         case TYPE_SCALAR_BOOL:
         {
-            BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+            BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
@@ -1659,7 +1677,7 @@ static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
         case TYPE_COMPLEX_OBJECT:
         case TYPE_COMPLEX_ARRAY:
         {
-            ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+            ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
 
             array_init_size(arr, vec->size());
             for (auto it = vec->begin(); it != vec->end(); ++it) {
@@ -1684,13 +1702,13 @@ static int mapToArray(map_object *thisObj, zval *arr TSRMLS_DC) {
 /**
  * serialize
  */
-PHP_METHOD(StdMap, serialize) {
+PHP_METHOD(StdSuperMap, serialize) {
     zval *val, *wrapper;
 	php_serialize_data_t var_hash;
 	smart_str buf = {0};
     zval *object = getThis();
 
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
     MAKE_STD_ZVAL(wrapper);
     MAKE_STD_ZVAL(val);
@@ -1698,7 +1716,7 @@ PHP_METHOD(StdMap, serialize) {
     array_init(wrapper);
     add_assoc_long(wrapper, "type", thisObj->type);
 
-    mapToArray(thisObj, val TSRMLS_CC);
+    super_mapToArray(thisObj, val TSRMLS_CC);
 
     add_assoc_zval(wrapper, "data", val);
 
@@ -1729,7 +1747,7 @@ PHP_METHOD(StdMap, serialize) {
 /**
  * unserialize
  */
-PHP_METHOD(StdMap, unserialize) {
+PHP_METHOD(StdSuperMap, unserialize) {
 
     char *serialized = NULL;
     int buf_len = 0;
@@ -1747,7 +1765,7 @@ PHP_METHOD(StdMap, unserialize) {
 	}
 
 	zval *object = getThis();
-    map_object *thisObj = (map_object *) zend_object_store_get_object(object TSRMLS_CC);
+    super_map_object *thisObj = (super_map_object *) zend_object_store_get_object(object TSRMLS_CC);
 
 	zval *arr;
 	MAKE_STD_ZVAL(arr);
@@ -1812,12 +1830,12 @@ PHP_METHOD(StdMap, unserialize) {
             case TYPE_SCALAR_INT:
             {
                 if (c == 0) {
-                    IntStdMap* vec = new IntStdMap();
-                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    IntStdSuperMap* vec = new IntStdSuperMap();
+                    vec->resize(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
                     thisObj->vo = vec;
                 }
 
-                IntStdMap *vec = (IntStdMap*) thisObj->vo;
+                IntStdSuperMap *vec = (IntStdSuperMap*) thisObj->vo;
                 (*vec)[key] = Z_LVAL_P(*data);
             }
             break;
@@ -1825,12 +1843,12 @@ PHP_METHOD(StdMap, unserialize) {
             case TYPE_SCALAR_FLOAT:
             {
                 if (c == 0) {
-                    FloatStdMap* vec = new FloatStdMap();
-                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    FloatStdSuperMap* vec = new FloatStdSuperMap();
+                    vec->resize(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
                     thisObj->vo = vec;
                 }
 
-                FloatStdMap *vec = (FloatStdMap*) thisObj->vo;
+                FloatStdSuperMap *vec = (FloatStdSuperMap*) thisObj->vo;
                 (*vec)[key] = Z_DVAL_P(*data);
             }
             break;
@@ -1838,12 +1856,12 @@ PHP_METHOD(StdMap, unserialize) {
             case TYPE_SCALAR_STRING:
             {
                 if (c == 0) {
-                    StringStdMap* vec = new StringStdMap();
-                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    StringStdSuperMap* vec = new StringStdSuperMap();
+                    vec->resize(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
                     thisObj->vo = vec;
                 }
 
-                StringStdMap *vec = (StringStdMap*) thisObj->vo;
+                StringStdSuperMap *vec = (StringStdSuperMap*) thisObj->vo;
                 (*vec)[key] = Z_STRVAL_P(*data);
             }
             break;
@@ -1851,12 +1869,12 @@ PHP_METHOD(StdMap, unserialize) {
             case TYPE_SCALAR_BOOL:
             {
                 if (c == 0) {
-                    BoolStdMap* vec = new BoolStdMap();
-                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    BoolStdSuperMap* vec = new BoolStdSuperMap();
+                    vec->resize(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
                     thisObj->vo = vec;
                 }
 
-                BoolStdMap *vec = (BoolStdMap*) thisObj->vo;
+                BoolStdSuperMap *vec = (BoolStdSuperMap*) thisObj->vo;
                 (*vec)[key] = Z_BVAL_P(*data);
             }
             break;
@@ -1866,12 +1884,12 @@ PHP_METHOD(StdMap, unserialize) {
             case TYPE_COMPLEX_ARRAY:
             {
                 if (c == 0) {
-                    ZvalStdMap* vec = new ZvalStdMap();
-                    vec->reserve(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
+                    ZvalStdSuperMap* vec = new ZvalStdSuperMap();
+                    vec->resize(zend_hash_num_elements(Z_ARRVAL_P(*zv_data)));
                     thisObj->vo = vec;
                 }
 
-                ZvalStdMap *vec = (ZvalStdMap*) thisObj->vo;
+                ZvalStdSuperMap *vec = (ZvalStdSuperMap*) thisObj->vo;
                 (*vec)[key] = *data;
                 //add_reference_count(*data);
             }
@@ -1894,3 +1912,8 @@ PHP_METHOD(StdMap, unserialize) {
 
 }
 
+
+
+
+
+#endif
