@@ -137,5 +137,5 @@ class StdMap {
 
 | Test   | PHP Array (MB) | StdMap (MB) |
 | :----- | ---------------: | ---------------: |
-| memory_get_peak_usage | 153.1 | 0.22 |
+| memory_get_peak_usage | 153.1 | 54.05 |
 | zsh (time command) max memory | 163 | 107  |
