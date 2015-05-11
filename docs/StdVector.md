@@ -171,5 +171,5 @@ class StdVector {
 
 | Test   | PHP Array (MB) | StdVector (MB) |
 | :----- | ---------------: | ---------------: |
-| memory_get_peak_usage | 137.92 | 0.22 |
+| memory_get_peak_usage | 137.92 | 7.85 |
 | zsh (time command) max memory | 154 | 24  |
