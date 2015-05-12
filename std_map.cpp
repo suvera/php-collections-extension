@@ -1157,11 +1157,16 @@ PHP_METHOD(StdMap, append) {
             ZvalStdMap *otherVec = (ZvalStdMap*) otherObj->vo;
             vec->reserve(vec->size() + otherVec->size());
 
+            zvalCompareIdentical cmp;
+
             for (auto it = otherVec->begin(); it != otherVec->end(); ++it) {
                 if (!vec->count(it->first)) {
-                    vec->insert(*it);
                     add_reference_count(it->second);
+                } else if (!cmp((*vec)[it->first], it->second)) {
+                    delete_reference_count((*vec)[it->first]);
                 }
+
+                vec->insert(*it);
             }
         }
         break;
