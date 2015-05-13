@@ -1,4 +1,10 @@
 
+typedef unordered_map<string, long, strHash, strPredicate, eMallocator<IntStdPair>> IntStdMap;
+typedef unordered_map<string, double, strHash, strPredicate, eMallocator<FloatStdPair>> FloatStdMap;
+typedef unordered_map<string, string, strHash, strPredicate, eMallocator<StringStdPair>> StringStdMap;
+typedef unordered_map<string, bool, strHash, strPredicate, eMallocator<BoolStdPair>> BoolStdMap;
+typedef unordered_map<string, zval*, strHash, strPredicate, eMallocator<ZvalStdPair>> ZvalStdMap;
+
 extern PHP_METHOD(StdMap, __construct);
 extern PHP_METHOD(StdMap, size);
 extern PHP_METHOD(StdMap, reserve);

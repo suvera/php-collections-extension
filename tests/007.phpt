@@ -35,7 +35,7 @@ try {
     //echo $ex->getMessage() . "\n";
 }
 
-$memSize = 216;
+$memSize = 384;
 $arr = array(10, 5, 8, 3, 1, 9);
 $memcgeck = array(2, 1, 1, 1, 1, 1, 1, 8, 9, 10);
 

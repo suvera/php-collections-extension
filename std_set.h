@@ -1,8 +1,8 @@
-typedef unordered_set<long> IntStdSet;
-typedef unordered_set<double> FloatStdSet;
-typedef unordered_set<string> StringStdSet;
-typedef unordered_set<bool> BoolStdSet;
-typedef unordered_set<zval*, std::hash<zval*>, zvalCompareIdentical> ZvalStdSet;
+typedef unordered_set<long, longHash, longPredicate, eMallocator<long>> IntStdSet;
+typedef unordered_set<double, doubleHash, doublePredicate, eMallocator<double>> FloatStdSet;
+typedef unordered_set<string, strHash, strPredicate, eMallocator<string>> StringStdSet;
+typedef unordered_set<bool, boolHash, boolPredicate, eMallocator<bool>> BoolStdSet;
+typedef unordered_set<zval*, zvalHash, zvalCompareIdentical, eMallocator<zval*>> ZvalStdSet;
 
 
 typedef struct _set_object {

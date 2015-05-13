@@ -53,23 +53,28 @@ extern "C" {
 
 typedef unsigned long uLongInt;
 
-typedef vector<long> IntVector;
-typedef vector<double> FloatVector;
-typedef vector<bool> BoolVector;
-typedef vector<string> StringVector;
-typedef vector<zval*> ZvalVector;
-
-typedef unordered_map<string, long> IntStdMap;
-typedef unordered_map<string, double> FloatStdMap;
-typedef unordered_map<string, string> StringStdMap;
-typedef unordered_map<string, bool> BoolStdMap;
-typedef unordered_map<string, zval*> ZvalStdMap;
+typedef vector<long, eMallocator<long>> IntVector;
+typedef vector<double, eMallocator<double>> FloatVector;
+typedef vector<bool, eMallocator<bool>> BoolVector;
+typedef vector<string, eMallocator<string>> StringVector;
+typedef vector<zval*, eMallocator<zval*>> ZvalVector;
 
 typedef std::pair<const string, long> IntStdPair;
 typedef std::pair<const string, double> FloatStdPair;
 typedef std::pair<const string, string> StringStdPair;
 typedef std::pair<const string, bool> BoolStdPair;
 typedef std::pair<const string, zval*> ZvalStdPair;
+
+typedef std::hash<string> strHash;
+typedef std::hash<long> longHash;
+typedef std::hash<double> doubleHash;
+typedef std::hash<bool> boolHash;
+typedef std::hash<zval*> zvalHash;
+
+typedef std::equal_to<string> strPredicate;
+typedef std::equal_to<long> longPredicate;
+typedef std::equal_to<double> doublePredicate;
+typedef std::equal_to<bool> boolPredicate;
 
 typedef std::pair<const char* const, long> IntStdSuperPair;
 typedef std::pair<const char* const, double> FloatStdSuperPair;
