@@ -3,6 +3,8 @@
 StdSet is a container that store *unique* elements in no particular order,
 and which allow for fast retrieval of individual elements based on their value.
 
+>> Note: PHP does not have Set like functionality in-built.
+
 Simple Example:
 
 ```php
@@ -14,7 +16,7 @@ $obj->push(0);
 
 echo 'My Set size is ' . $obj->size() . " \n";
 
-$obj->applyEach(function($value) {
+$obj->applyEach(function($val) {
     echo "Item: $val \n";
 });
 ```
@@ -31,7 +33,7 @@ $obj->push('bing');
 
 echo 'My Set size is ' . $obj->size() . " \n";
 
-$obj->applyEach(function($value) {
+$obj->applyEach(function($val) {
     echo "Item: $val \n";
 });
 ```
@@ -94,10 +96,21 @@ class StdSet {
 
 <sub>Tested with 1 million items.</sub>
 
+>> when you want to use PHP array as a Set then you have to make sure that
+>> all elements are unique, that is nature of a Set.
+>> to do so, you have to use in_array() or array_search() before insert
+>> but that will take forever.
+>> Since PHP does not have Set like functionality in-built, these statistics may be wrong.
+
 
 | Test   | PHP Array (secs) | StdSet (secs) |
 | :----- | ---------------: | ---------------: |
-| Creation - Integer values | x | y |
+| Creation - Integer values | 0.46283317 | 0.35474396 |
+| Creation - Object values | 1.7613399 | 1.6478591 |
+| in_array - Integer values | 0.01591301 | 0.00000501 |
+| in_array - Object values | 0.05098796 | 0.00001311 |
+| in_array - for unknown value | 0.05051899 | 0.00001192 |
+| array_values - Integer values | 0.24997211 | 0.00725293 (StdVector) |
 
 
 
@@ -107,5 +120,5 @@ class StdSet {
 
 | Test   | PHP Array (MB) | StdSet (MB) |
 | :----- | ---------------: | ---------------: |
-| memory_get_peak_usage | X | y |
-| zsh (time command) max memory | X | y  |
+| memory_get_peak_usage | 137.92 | 38.8 |
+| zsh (time command) max memory | 154 | 53  |
