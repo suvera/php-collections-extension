@@ -27,44 +27,13 @@ struct CharPtrEquality {
     }
 };
 
-struct CompareCharPtrValue {
-    const char *value;
-    void*** tsrmls_dc;
-
-    bool operator()(const char* s2) const {
-        if (value && s2)
-            return strcmp(value, s2) == 0;
-        else
-            return value == NULL && s2 == NULL;
-    }
-
-    CompareCharPtrValue(const char *val, void*** tsrmls_dc_) {
-        value = val;
-        tsrmls_dc = tsrmls_dc_;
-    }
-};
-
-bool compareCharPtr(const char* s1, const char* s2) {
-    if (s1 && s2)
-        return strcmp(s1, s2) == 0;
-    else if (s1 == NULL && s2 == NULL)
-        return true;
-    else if (s1 == NULL)
-        return true;
-    else
-        return false;
-}
-
-#define HASH_SEED 5381
-
 // replace in-place of   hash<const char*>  below
 struct customHash {
-    unsigned long operator()(const char* str) const {
-        unsigned long hash = HASH_SEED;
-        int c;
+    uLongInt operator()(const char* str) const {
+        uLongInt hash = 5381;
 
-        while (c = *str++)
-            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+        while (*str)
+            hash = ((hash << 5) + hash) + *str++; /* hash * 33 + c */
 
         return hash;
     }
@@ -127,6 +96,10 @@ static zend_function_entry super_map_class_methods[] = {
 
 	/* Aliases */
     PHP_MALIAS(StdSuperMap, replace, push, arginfo_vector_add, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(StdSuperMap, offsetExists, hasKey, arginfo_offsetexists, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(StdSuperMap, offsetGet, at, arginfo_offsetget, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(StdSuperMap, offsetSet, push, arginfo_offsetset, ZEND_ACC_PUBLIC)
+    PHP_MALIAS(StdSuperMap, offsetUnset, erase, arginfo_offsetunset, ZEND_ACC_PUBLIC)
 
     PHP_ME(StdSuperMap, applyEach, NULL, ZEND_ACC_PUBLIC)
 
@@ -150,6 +123,9 @@ static void super_map_object_free_storage(super_map_object *intern TSRMLS_DC)
             case TYPE_SCALAR_INT:
             {
                 IntStdSuperMap *tmp = static_cast<IntStdSuperMap*>(intern->vo);
+                //for (auto it = tmp->begin(); it != tmp->end(); ++it ) {
+                    //efree(it->first);
+                //}
                 tmp->clear();
                 delete tmp;
             }

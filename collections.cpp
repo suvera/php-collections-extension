@@ -104,6 +104,23 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_unserialize, 0, 0, 1)
 	ZEND_ARG_INFO(0, serialized)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetset, 0, 0, 1)
+	ZEND_ARG_INFO(0, index)
+	ZEND_ARG_INFO(0, newval)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetget, 0, 0, 1)
+	ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetexists, 0, 0, 1)
+	ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetunset, 0, 0, 1)
+	ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
+
 
 
 
@@ -320,7 +337,6 @@ public:
 
     int __call(zval* obj1, const char* key) const {
         zval **args[2], *obj2, *retval_ptr = NULL;
-
         MAKE_STD_ZVAL(obj2);
         ZVAL_STRING(obj2, key, 1);
 
@@ -572,6 +588,7 @@ PHP_MINIT_FUNCTION(collections)
     super_map_entry = zend_register_internal_class(&ce TSRMLS_CC);
     super_map_entry->create_object = super_map_object_new;
     zend_class_implements(super_map_entry TSRMLS_CC, 1, zend_ce_serializable);
+    zend_class_implements(super_map_entry TSRMLS_CC, 1, zend_ce_arrayaccess);
 #endif
 
     // Register PHP Constants
